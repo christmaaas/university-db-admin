@@ -2,13 +2,10 @@ package postgres
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
 
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -29,45 +26,29 @@ func (e *employeesRepository) Create(ctx context.Context, emp domain.Employee) e
 		RETURNING id
 	`
 
-	log.Println("executing sql: ", sql)
+	log.Println("executing sql:", sql)
 	err := e.dbclient.QueryRow(ctx, sql,
 		emp.Name,
 		emp.Passport,
 		emp.PositionID,
 	).Scan(&emp.ID)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			pgErr = err.(*pgconn.PgError)
-
-			newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-				pgErr.Message,
-				pgErr.Detail,
-				pgErr.Where,
-				pgErr.Code,
-				pgErr.SQLState()))
-			log.Println(newErr)
-
-			return pgErr
-		}
-		return err
+		return handlePgError(err)
 	}
 
-	log.Println("sql result: ", emp.ID)
-
+	log.Println("sql result:", emp.ID)
 	return nil
 }
 
 func (e *employeesRepository) FindOne(ctx context.Context, id uint64) (domain.Employee, error) {
 	sql := `
-		SELECT e.id, e.name, e.passport, e.position_id 
-		FROM public.employees e
-		WHERE e.id = $1
+		SELECT id, name, passport, position_id 
+		FROM public.employees
+		WHERE id = $1
 	`
 
 	var emp domain.Employee
-
-	log.Println("executing sql: ", sql)
+	log.Println("executing sql:", sql)
 	err := e.dbclient.QueryRow(ctx, sql, id).Scan(
 		&emp.ID,
 		&emp.Name,
@@ -75,144 +56,89 @@ func (e *employeesRepository) FindOne(ctx context.Context, id uint64) (domain.Em
 		&emp.PositionID,
 	)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			pgErr = err.(*pgconn.PgError)
-
-			newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-				pgErr.Message,
-				pgErr.Detail,
-				pgErr.Where,
-				pgErr.Code,
-				pgErr.SQLState()))
-			log.Println(newErr)
-
-			return domain.Employee{}, newErr
-		}
-		return domain.Employee{}, err
+		return domain.Employee{}, handlePgError(err)
 	}
 
-	log.Println("sql result: ", emp)
-
+	log.Println("sql result:", emp)
 	return emp, nil
 }
+
 func (e *employeesRepository) FindAll(ctx context.Context) ([]domain.Employee, error) {
 	sql := `
-		SELECT e.id, e.name, e.passport, e.position_id 
-		FROM public.employees e
+		SELECT id, name, passport, position_id 
+		FROM public.employees
 	`
 
-	var (
-		emps []domain.Employee
-		emp  domain.Employee
-	)
+	var emps []domain.Employee
+	log.Println("executing sql:", sql)
 
-	log.Println("executing sql: ", sql)
 	rows, err := e.dbclient.Query(ctx, sql)
 	if err != nil {
-		return emps, err
+		return nil, handlePgError(err)
 	}
+	defer rows.Close()
 
 	for rows.Next() {
-		err = rows.Scan(
+		var emp domain.Employee
+		err := rows.Scan(
 			&emp.ID,
 			&emp.Name,
 			&emp.Passport,
 			&emp.PositionID,
 		)
 		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return nil, err
-			}
-			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) {
-				pgErr = err.(*pgconn.PgError)
-
-				newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-					pgErr.Message,
-					pgErr.Detail,
-					pgErr.Where,
-					pgErr.Code,
-					pgErr.SQLState()))
-				log.Println(newErr)
-
-				return nil, newErr
-			}
-			return nil, err
+			return nil, handlePgError(err)
 		}
-
 		emps = append(emps, emp)
 	}
 
-	log.Println("sql result: ", emps)
-
+	log.Println("sql result:", emps)
 	return emps, nil
 }
 
 func (e *employeesRepository) FindByName(ctx context.Context, name string) ([]domain.Employee, error) {
 	sql := `
-		SELECT e.id, e.name, e.passport, e.position_id 
-		FROM public.employees e
-		WHERE e.name = $1
+		SELECT id, name, passport, position_id 
+		FROM public.employees
+		WHERE name = $1
 	`
 
-	var (
-		emps []domain.Employee
-		emp  domain.Employee
-	)
+	var emps []domain.Employee
+	log.Println("executing sql:", sql)
 
-	log.Println("executing sql: ", sql)
 	rows, err := e.dbclient.Query(ctx, sql, name)
 	if err != nil {
-		return emps, err
+		return nil, handlePgError(err)
 	}
+	defer rows.Close()
 
 	for rows.Next() {
-		err = rows.Scan(
+		var emp domain.Employee
+		err := rows.Scan(
 			&emp.ID,
 			&emp.Name,
 			&emp.Passport,
 			&emp.PositionID,
 		)
 		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return nil, err
-			}
-			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) {
-				pgErr = err.(*pgconn.PgError)
-
-				newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-					pgErr.Message,
-					pgErr.Detail,
-					pgErr.Where,
-					pgErr.Code,
-					pgErr.SQLState()))
-				log.Println(newErr)
-
-				return nil, newErr
-			}
-			return nil, err
+			return nil, handlePgError(err)
 		}
-
 		emps = append(emps, emp)
 	}
 
-	log.Println("sql result: ", emps)
-
+	log.Println("sql result:", emps)
 	return emps, nil
 }
 
 func (e *employeesRepository) FindByPassport(ctx context.Context, passport string) (domain.Employee, error) {
 	sql := `
-		SELECT e.id, e.name, e.passport, e.position_id 
-		FROM public.employees e
-		WHERE e.passport = $1
+		SELECT id, name, passport, position_id 
+		FROM public.employees
+		WHERE passport = $1
 	`
 
 	var emp domain.Employee
-
-	log.Println("executing sql: ", sql)
+	log.Println("executing sql:", sql)
 	err := e.dbclient.QueryRow(ctx, sql, passport).Scan(
 		&emp.ID,
 		&emp.Name,
@@ -220,79 +146,44 @@ func (e *employeesRepository) FindByPassport(ctx context.Context, passport strin
 		&emp.PositionID,
 	)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			pgErr = err.(*pgconn.PgError)
-
-			newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-				pgErr.Message,
-				pgErr.Detail,
-				pgErr.Where,
-				pgErr.Code,
-				pgErr.SQLState()))
-			log.Println(newErr)
-
-			return domain.Employee{}, newErr
-		}
-		return domain.Employee{}, err
+		return domain.Employee{}, handlePgError(err)
 	}
 
-	log.Println("sql result: ", emp)
-
+	log.Println("sql result:", emp)
 	return emp, nil
 }
 
 func (e *employeesRepository) FindByPosition(ctx context.Context, position uint64) ([]domain.Employee, error) {
 	sql := `
-		SELECT e.id, e.name, e.passport, e.position_id 
-		FROM public.employees e
-		WHERE e.position_id = $1
+		SELECT id, name, passport, position_id 
+		FROM public.employees
+		WHERE position_id = $1
 	`
 
-	var (
-		emps []domain.Employee
-		emp  domain.Employee
-	)
+	var emps []domain.Employee
+	log.Println("executing sql:", sql)
 
-	log.Println("executing sql: ", sql)
 	rows, err := e.dbclient.Query(ctx, sql, position)
 	if err != nil {
-		return emps, err
+		return nil, handlePgError(err)
 	}
+	defer rows.Close()
 
 	for rows.Next() {
-		err = rows.Scan(
+		var emp domain.Employee
+		err := rows.Scan(
 			&emp.ID,
 			&emp.Name,
 			&emp.Passport,
 			&emp.PositionID,
 		)
 		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return nil, err
-			}
-			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) {
-				pgErr = err.(*pgconn.PgError)
-
-				newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-					pgErr.Message,
-					pgErr.Detail,
-					pgErr.Where,
-					pgErr.Code,
-					pgErr.SQLState()))
-				log.Println(newErr)
-
-				return nil, newErr
-			}
-			return nil, err
+			return nil, handlePgError(err)
 		}
-
 		emps = append(emps, emp)
 	}
 
-	log.Println("sql result: ", emps)
-
+	log.Println("sql result:", emps)
 	return emps, nil
 }
 
@@ -304,7 +195,7 @@ func (e *employeesRepository) Update(ctx context.Context, id uint64, emp domain.
 		RETURNING id
 	`
 
-	log.Println("executing sql: ", sql)
+	log.Println("executing sql:", sql)
 	err := e.dbclient.QueryRow(ctx, sql,
 		emp.Name,
 		emp.Passport,
@@ -312,56 +203,26 @@ func (e *employeesRepository) Update(ctx context.Context, id uint64, emp domain.
 		id,
 	).Scan(&id)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			pgErr = err.(*pgconn.PgError)
-
-			newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-				pgErr.Message,
-				pgErr.Detail,
-				pgErr.Where,
-				pgErr.Code,
-				pgErr.SQLState()))
-			log.Println(newErr)
-
-			return newErr
-		}
-		return err
+		return handlePgError(err)
 	}
 
-	log.Println("sql result: ", id)
-
+	log.Println("sql result:", id)
 	return nil
 }
 
 func (e *employeesRepository) Delete(ctx context.Context, id uint64) error {
 	sql := `
-		DELETE FROM public.employees e
-		WHERE e.id = $1
+		DELETE FROM public.employees
+		WHERE id = $1
 		RETURNING id
 	`
 
-	log.Println("executing sql: ", sql)
+	log.Println("executing sql:", sql)
 	err := e.dbclient.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			pgErr = err.(*pgconn.PgError)
-
-			newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-				pgErr.Message,
-				pgErr.Detail,
-				pgErr.Where,
-				pgErr.Code,
-				pgErr.SQLState()))
-			log.Println(newErr)
-
-			return newErr
-		}
-		return err
+		return handlePgError(err)
 	}
 
-	log.Println("sql result: ", id)
-
+	log.Println("sql result:", id)
 	return nil
 }
