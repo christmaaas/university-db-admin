@@ -118,7 +118,7 @@ func showUpdateEmployeesForm(content *fyne.Container, r *repository.Repository) 
 func showEmployeesList(content *fyne.Container, r *repository.Repository) {
 	content.Objects = nil
 
-	headers := []string{"ID", "Имя", "Паспорт", "ID Должности"}
+	headers := []string{"ID сотрудника", "Имя", "Паспорт", "ID Должности"}
 	var data [][]string
 
 	filterEntry := widget.NewEntry()

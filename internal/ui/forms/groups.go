@@ -99,7 +99,7 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 	content.Objects = nil
 
 	headers := []string{
-		"ID",
+		"ID группы",
 		"Номер",
 	}
 	var data [][]string

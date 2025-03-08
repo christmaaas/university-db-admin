@@ -129,7 +129,7 @@ func showStudentsList(content *fyne.Container, r *repository.Repository) {
 	content.Objects = nil
 
 	headers := []string{
-		"ID",
+		"ID студента",
 		"Имя",
 		"Паспорт",
 		"ID Куратора",

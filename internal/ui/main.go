@@ -21,7 +21,7 @@ func Run(r *repository.Repository) {
 	options := []string{
 		"Сотрудники",
 		"Группы",
-		"Типы предметов",
+		"Типы занятий",
 		"Занятия",
 		"Оценки",
 		"Должности",
@@ -48,10 +48,10 @@ func updateContent(content *fyne.Container, action, entity string, r *repository
 		forms.ShowEmployeesForm(content, action, r)
 	case "Группы":
 		forms.ShowGroupsForm(content, action, r)
+	case "Типы занятий":
+		forms.ShowLessonTypesForm(content, action, r)
 	case "Студенты":
 		forms.ShowStudentsForm(content, action, r)
-	case "Предметы":
-		// TODO: forms.ShowSubjectForm(content, action, r)
 	}
 
 	content.Refresh()
