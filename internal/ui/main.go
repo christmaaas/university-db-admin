@@ -17,7 +17,18 @@ func Run(r *repository.Repository) {
 
 	titleLabel := widget.NewLabelWithStyle("Выберите действие", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 	actionSelect := widget.NewSelect([]string{"Добавить", "Удалить", "Обновить", "Просмотреть"}, nil)
-	entitySelect := widget.NewSelect([]string{"Сотрудники", "Студенты", "Должности", "Предметы"}, nil)
+
+	options := []string{
+		"Сотрудники",
+		"Группы",
+		"Типы предметов",
+		"Занятия",
+		"Оценки",
+		"Должности",
+		"Студенты",
+		"Предметы",
+	}
+	entitySelect := widget.NewSelect(options, nil)
 
 	contentContainer := container.NewVBox()
 	executeButton := widget.NewButton("Применить", func() {
@@ -34,9 +45,9 @@ func updateContent(content *fyne.Container, action, entity string, r *repository
 
 	switch entity {
 	case "Сотрудники":
-		forms.ShowEmployeeForm(content, action, r)
+		forms.ShowEmployeesForm(content, action, r)
 	case "Студенты":
-		// TODO: forms.ShowStudentForm(content, action, r)
+		forms.ShowStudentsForm(content, action, r)
 	case "Должности":
 		// TODO: forms.ShowPositionForm(content, action, r)
 	case "Предметы":

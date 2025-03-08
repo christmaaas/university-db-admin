@@ -50,10 +50,9 @@ func updateTable(headers []string, data [][]string) *fyne.Container {
 		},
 	)
 
-	table.SetColumnWidth(0, 50)
-	table.SetColumnWidth(1, 800)
-	table.SetColumnWidth(2, 100)
-	table.SetColumnWidth(3, 120)
+	for i := range headers {
+		table.SetColumnWidth(i, 300)
+	}
 
 	scrollContainer := container.NewVScroll(table)
 	scrollContainer.SetMinSize(fyne.NewSize(500, 450))
