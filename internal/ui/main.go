@@ -46,10 +46,10 @@ func updateContent(content *fyne.Container, action, entity string, r *repository
 	switch entity {
 	case "Сотрудники":
 		forms.ShowEmployeesForm(content, action, r)
+	case "Группы":
+		forms.ShowGroupsForm(content, action, r)
 	case "Студенты":
 		forms.ShowStudentsForm(content, action, r)
-	case "Должности":
-		// TODO: forms.ShowPositionForm(content, action, r)
 	case "Предметы":
 		// TODO: forms.ShowSubjectForm(content, action, r)
 	}
