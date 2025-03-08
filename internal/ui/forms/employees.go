@@ -5,31 +5,30 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
-	"university-db-admin/internal/ui/utils"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowEmployeeForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowEmployeesForm(content *fyne.Container, action string, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
 	case "Добавить":
-		showAddEmployeeForm(content, r)
+		showAddEmployeesForm(content, r)
 	case "Удалить":
-		showDeleteEmployeeForm(content, r)
+		showDeleteEmployeesForm(content, r)
 	case "Обновить":
-		showUpdateEmployeeForm(content, r)
+		showUpdateEmployeesForm(content, r)
 	case "Просмотреть":
-		showEmployeeList(content, r)
+		showEmployeesList(content, r)
 	}
 
 	content.Refresh()
 }
 
-func showAddEmployeeForm(content *fyne.Container, r *repository.Repository) {
+func showAddEmployeesForm(content *fyne.Container, r *repository.Repository) {
 	nameEntry := widget.NewEntry()
 	nameEntry.SetPlaceHolder("Имя")
 
@@ -43,11 +42,11 @@ func showAddEmployeeForm(content *fyne.Container, r *repository.Repository) {
 		employee := domain.Employee{
 			Name:       nameEntry.Text,
 			Passport:   passportEntry.Text,
-			PositionID: utils.ParseUint64(positionEntry.Text),
+			PositionID: parseUint64(positionEntry.Text),
 		}
 
 		err := r.Employees.Create(context.Background(), employee)
-		utils.ShowResult(content, err, "Сотрудник успешно добавлен")
+		showResult(content, err, "Сотрудник успешно добавлен")
 	})
 
 	form := container.NewVBox(
@@ -61,13 +60,13 @@ func showAddEmployeeForm(content *fyne.Container, r *repository.Repository) {
 	content.Add(form)
 }
 
-func showDeleteEmployeeForm(content *fyne.Container, r *repository.Repository) {
+func showDeleteEmployeesForm(content *fyne.Container, r *repository.Repository) {
 	idEntry := widget.NewEntry()
 	idEntry.SetPlaceHolder("ID сотрудника")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.Employees.Delete(context.Background(), utils.ParseUint64(idEntry.Text))
-		utils.ShowResult(content, err, "Сотрудник удалён")
+		err := r.Employees.Delete(context.Background(), parseUint64(idEntry.Text))
+		showResult(content, err, "Сотрудник удалён")
 	})
 
 	form := container.NewVBox(
@@ -79,7 +78,7 @@ func showDeleteEmployeeForm(content *fyne.Container, r *repository.Repository) {
 	content.Add(form)
 }
 
-func showUpdateEmployeeForm(content *fyne.Container, r *repository.Repository) {
+func showUpdateEmployeesForm(content *fyne.Container, r *repository.Repository) {
 	idEntry := widget.NewEntry()
 	idEntry.SetPlaceHolder("ID сотрудника")
 
@@ -94,14 +93,14 @@ func showUpdateEmployeeForm(content *fyne.Container, r *repository.Repository) {
 
 	updateButton := widget.NewButton("Обновить", func() {
 		employee := domain.Employee{
-			ID:         utils.ParseUint64(idEntry.Text),
+			ID:         parseUint64(idEntry.Text),
 			Name:       nameEntry.Text,
 			Passport:   passportEntry.Text,
-			PositionID: utils.ParseUint64(positionEntry.Text),
+			PositionID: parseUint64(positionEntry.Text),
 		}
 
 		err := r.Employees.Update(context.Background(), employee.ID, employee)
-		utils.ShowResult(content, err, "Сотрудник обновлён")
+		showResult(content, err, "Сотрудник обновлён")
 	})
 
 	form := container.NewVBox(
@@ -116,7 +115,7 @@ func showUpdateEmployeeForm(content *fyne.Container, r *repository.Repository) {
 	content.Add(form)
 }
 
-func showEmployeeList(content *fyne.Container, r *repository.Repository) {
+func showEmployeesList(content *fyne.Container, r *repository.Repository) {
 	content.Objects = nil
 
 	headers := []string{"ID", "Имя", "Паспорт", "ID Должности"}
@@ -158,7 +157,7 @@ func showEmployeeList(content *fyne.Container, r *repository.Repository) {
 		case 0:
 			employees, err = r.Employees.FindAll(context.Background())
 		case 1:
-			emp, err = r.Employees.FindOne(context.Background(), utils.ParseUint64(filterEntry.Text))
+			emp, err = r.Employees.FindOne(context.Background(), parseUint64(filterEntry.Text))
 			if err == nil {
 				employees = append(employees, emp)
 			}
@@ -170,11 +169,11 @@ func showEmployeeList(content *fyne.Container, r *repository.Repository) {
 				employees = append(employees, emp)
 			}
 		case 4:
-			employees, err = r.Employees.FindByPosition(context.Background(), utils.ParseUint64(filterEntry.Text))
+			employees, err = r.Employees.FindByPosition(context.Background(), parseUint64(filterEntry.Text))
 		}
 
 		if err != nil {
-			utils.ShowResult(content, err, "Ошибка при поиске")
+			showResult(content, err, "Ошибка при поиске")
 			return
 		}
 
@@ -212,34 +211,4 @@ func showEmployeeList(content *fyne.Container, r *repository.Repository) {
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
 	content.Refresh()
-}
-
-func updateTable(headers []string, data [][]string) *fyne.Container {
-	table := widget.NewTable(
-		func() (int, int) { return len(data) + 1, len(headers) },
-		func() fyne.CanvasObject {
-			return container.NewHScroll(widget.NewLabel("")) // HScroll wrapper for long strings like names to scroll them
-		},
-		func(cell widget.TableCellID, obj fyne.CanvasObject) {
-			scroll := obj.(*container.Scroll)
-			label := scroll.Content.(*widget.Label)
-
-			if cell.Row == 0 {
-				label.SetText(headers[cell.Col])
-				label.TextStyle.Bold = true
-			} else {
-				label.SetText(data[cell.Row-1][cell.Col])
-			}
-		},
-	)
-
-	table.SetColumnWidth(0, 50)
-	table.SetColumnWidth(1, 800)
-	table.SetColumnWidth(2, 100)
-	table.SetColumnWidth(3, 120)
-
-	scrollContainer := container.NewVScroll(table)
-	scrollContainer.SetMinSize(fyne.NewSize(500, 450))
-
-	return container.NewVBox(scrollContainer)
 }
