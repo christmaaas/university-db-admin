@@ -82,62 +82,23 @@ func (s *subjectsRepository) FindAll(ctx context.Context) ([]domain.Subject, err
 	return subjects, nil
 }
 
-func (s *subjectsRepository) FindByName(ctx context.Context, name string) ([]domain.Subject, error) {
+func (s *subjectsRepository) FindByName(ctx context.Context, name string) (domain.Subject, error) {
 	sql := `
 		SELECT id, name, description
 		FROM public.subjects
 		WHERE name = $1
 	`
 
-	var subjects []domain.Subject
+	var sbj domain.Subject
 	log.Println("executing sql:", sql)
 
-	rows, err := s.dbclient.Query(ctx, sql, name)
+	err := s.dbclient.QueryRow(ctx, sql, name).Scan(&sbj.ID, &sbj.Name, &sbj.Description)
 	if err != nil {
-		return nil, handlePgError(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var sbj domain.Subject
-		err := rows.Scan(&sbj.ID, &sbj.Name, &sbj.Description)
-		if err != nil {
-			return nil, handlePgError(err)
-		}
-		subjects = append(subjects, sbj)
+		return domain.Subject{}, handlePgError(err)
 	}
 
-	log.Println("sql result:", subjects)
-	return subjects, nil
-}
-
-func (s *subjectsRepository) FindByDescription(ctx context.Context, dscr string) ([]domain.Subject, error) {
-	sql := `
-		SELECT id, name, description
-		FROM public.subjects
-		WHERE description LIKE $1
-	`
-
-	var subjects []domain.Subject
-	log.Println("executing sql:", sql)
-
-	rows, err := s.dbclient.Query(ctx, sql, "%"+dscr+"%")
-	if err != nil {
-		return nil, handlePgError(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var sbj domain.Subject
-		err := rows.Scan(&sbj.ID, &sbj.Name, &sbj.Description)
-		if err != nil {
-			return nil, handlePgError(err)
-		}
-		subjects = append(subjects, sbj)
-	}
-
-	log.Println("sql result:", subjects)
-	return subjects, nil
+	log.Println("sql result:", sbj)
+	return sbj, nil
 }
 
 func (s *subjectsRepository) Update(ctx context.Context, id uint64, sbj domain.Subject) error {

@@ -76,7 +76,7 @@ type Positions interface {
 	Create(ctx context.Context, pos domain.Position) error
 	FindOne(ctx context.Context, id uint64) (domain.Position, error)
 	FindAll(ctx context.Context) ([]domain.Position, error)
-	FindByName(ctx context.Context, name string) ([]domain.Position, error)
+	FindByName(ctx context.Context, name string) (domain.Position, error)
 	Update(ctx context.Context, id uint64, pos domain.Position) error
 	Delete(ctx context.Context, id uint64) error
 }
@@ -97,8 +97,7 @@ type Subjects interface {
 	Create(ctx context.Context, sbj domain.Subject) error
 	FindOne(ctx context.Context, id uint64) (domain.Subject, error)
 	FindAll(ctx context.Context) ([]domain.Subject, error)
-	FindByName(ctx context.Context, name string) ([]domain.Subject, error)
-	FindByDescription(ctx context.Context, dscr string) ([]domain.Subject, error)
+	FindByName(ctx context.Context, name string) (domain.Subject, error)
 	Update(ctx context.Context, id uint64, sbj domain.Subject) error
 	Delete(ctx context.Context, id uint64) error
 }

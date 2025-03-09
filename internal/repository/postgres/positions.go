@@ -82,33 +82,23 @@ func (p *positionsRepository) FindAll(ctx context.Context) ([]domain.Position, e
 	return positions, nil
 }
 
-func (p *positionsRepository) FindByName(ctx context.Context, name string) ([]domain.Position, error) {
+func (p *positionsRepository) FindByName(ctx context.Context, name string) (domain.Position, error) {
 	sql := `
 		SELECT id, name
 		FROM public.positions
 		WHERE name = $1
 	`
 
-	var positions []domain.Position
+	var pos domain.Position
+
 	log.Println("executing sql:", sql)
-
-	rows, err := p.dbclient.Query(ctx, sql, name)
+	err := p.dbclient.QueryRow(ctx, sql, name).Scan(&pos.ID, &pos.Name)
 	if err != nil {
-		return nil, handlePgError(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var pos domain.Position
-		err := rows.Scan(&pos.ID, &pos.Name)
-		if err != nil {
-			return nil, handlePgError(err)
-		}
-		positions = append(positions, pos)
+		return domain.Position{}, handlePgError(err)
 	}
 
-	log.Println("sql result:", positions)
-	return positions, nil
+	log.Println("sql result:", pos)
+	return pos, nil
 }
 
 func (p *positionsRepository) Update(ctx context.Context, id uint64, pos domain.Position) error {
