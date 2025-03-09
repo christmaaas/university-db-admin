@@ -72,13 +72,13 @@ func showUpdateLessonTypesForm(content *fyne.Container, r *repository.Repository
 	idEntry := widget.NewEntry()
 	idEntry.SetPlaceHolder("ID типа занятия")
 
-	lTypeEntry := widget.NewEntry()
-	lTypeEntry.SetPlaceHolder("Новый тип занятия")
+	nameEntry := widget.NewEntry()
+	nameEntry.SetPlaceHolder("Новое название")
 
 	updateButton := widget.NewButton("Обновить", func() {
 		lType := domain.LessonType{
 			ID:   parseUint64(idEntry.Text),
-			Name: lTypeEntry.Text,
+			Name: nameEntry.Text,
 		}
 
 		err := r.LessonTypes.Update(context.Background(), lType.ID, lType)
@@ -88,7 +88,7 @@ func showUpdateLessonTypesForm(content *fyne.Container, r *repository.Repository
 	form := container.NewVBox(
 		widget.NewLabel("Обновление типа занятия"),
 		idEntry,
-		lTypeEntry,
+		nameEntry,
 		updateButton,
 	)
 
