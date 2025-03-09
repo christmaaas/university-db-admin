@@ -9,12 +9,22 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// TODO: change error handling to avoid fatal exit
 func parseUint64(value string) uint64 {
 	num, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
-		log.Fatalln(err) // if application cant convert string to int it should be stopped
+		log.Fatalln(err)
 	}
 	return num
+}
+
+// TODO: change error handling to avoid fatal exit
+func parseUint16(value string) uint16 {
+	num, err := strconv.ParseUint(value, 10, 16)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return uint16(num)
 }
 
 func showResult(content *fyne.Container, err error, successMessage string) {

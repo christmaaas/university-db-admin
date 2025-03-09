@@ -50,8 +50,16 @@ func updateContent(content *fyne.Container, action, entity string, r *repository
 		forms.ShowGroupsForm(content, action, r)
 	case "Типы занятий":
 		forms.ShowLessonTypesForm(content, action, r)
+	case "Занятия":
+		forms.ShowLessonsForm(content, action, r)
+	case "Оценки":
+		forms.ShowMarksForm(content, action, r)
+	case "Должности":
+		forms.ShowPositionsForm(content, action, r)
 	case "Студенты":
 		forms.ShowStudentsForm(content, action, r)
+	case "Предметы":
+		forms.ShowSubjectsForm(content, action, r)
 	}
 
 	content.Refresh()
