@@ -31,7 +31,7 @@ type Groups interface {
 	Create(ctx context.Context, grp domain.Group) error
 	FindOne(ctx context.Context, id uint64) (domain.Group, error)
 	FindAll(ctx context.Context) ([]domain.Group, error)
-	FindByNumber(ctx context.Context, num uint64) ([]domain.Group, error)
+	FindByNumber(ctx context.Context, num uint64) (domain.Group, error)
 	Update(ctx context.Context, id uint64, grp domain.Group) error
 	Delete(ctx context.Context, id uint64) error
 }

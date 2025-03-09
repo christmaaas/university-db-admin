@@ -83,33 +83,23 @@ func (g *groupsRepository) FindAll(ctx context.Context) ([]domain.Group, error) 
 	return groups, nil
 }
 
-func (g *groupsRepository) FindByNumber(ctx context.Context, num uint64) ([]domain.Group, error) {
+func (g *groupsRepository) FindByNumber(ctx context.Context, num uint64) (domain.Group, error) {
 	sql := `
 		SELECT g.id, g.number
 		FROM public.groups g
 		WHERE g.number = $1
 	`
 
-	var groups []domain.Group
+	var grp domain.Group
+
 	log.Println("executing sql: ", sql)
-
-	rows, err := g.dbclient.Query(ctx, sql, num)
+	err := g.dbclient.QueryRow(ctx, sql, num).Scan(&grp.ID, &grp.Number)
 	if err != nil {
-		return groups, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var grp domain.Group
-		err := rows.Scan(&grp.ID, &grp.Number)
-		if err != nil {
-			return nil, handlePgError(err)
-		}
-		groups = append(groups, grp)
+		return domain.Group{}, handlePgError(err)
 	}
 
-	log.Println("sql result: ", groups)
-	return groups, nil
+	log.Println("sql result: ", grp)
+	return grp, nil
 }
 
 func (g *groupsRepository) Update(ctx context.Context, id uint64, grp domain.Group) error {

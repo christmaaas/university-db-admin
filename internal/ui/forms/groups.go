@@ -148,7 +148,10 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 				groups = append(groups, grp)
 			}
 		case 2:
-			groups, err = r.Groups.FindByNumber(context.Background(), parseUint64(filterEntry.Text))
+			grp, err = r.Groups.FindByNumber(context.Background(), parseUint64(filterEntry.Text))
+			if err == nil {
+				groups = append(groups, grp)
+			}
 		}
 
 		if err != nil {
