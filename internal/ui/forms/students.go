@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -42,6 +43,17 @@ func showAddStudentsForm(content *fyne.Container, r *repository.Repository) {
 	groupEntry.SetPlaceHolder("ID Группы")
 
 	submitButton := widget.NewButton("Добавить", func() {
+		err := validation.ValidateEmptyStrings(
+			nameEntry.Text,
+			passportEntry.Text,
+			employeeEntry.Text,
+			groupEntry.Text,
+		)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		student := domain.Student{
 			Name:       nameEntry.Text,
 			Passport:   passportEntry.Text,
@@ -49,7 +61,12 @@ func showAddStudentsForm(content *fyne.Container, r *repository.Repository) {
 			GroupID:    parseUint64(groupEntry.Text),
 		}
 
-		err := r.Students.Create(context.Background(), student)
+		if err = validation.ValidateStruct(student); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Students.Create(context.Background(), student)
 		showResult(content, err, "Студент успешно добавлен")
 	})
 
@@ -70,7 +87,20 @@ func showDeleteStudentsForm(content *fyne.Container, r *repository.Repository) {
 	idEntry.SetPlaceHolder("ID студента")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.Students.Delete(context.Background(), parseUint64(idEntry.Text))
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumber(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Students.Delete(context.Background(), id)
 		showResult(content, err, "Студент удалён")
 	})
 
@@ -100,6 +130,18 @@ func showUpdateStudentsForm(content *fyne.Container, r *repository.Repository) {
 	groupEntry.SetPlaceHolder("Новый ID Группы")
 
 	updateButton := widget.NewButton("Обновить", func() {
+		err := validation.ValidateEmptyStrings(
+			idEntry.Text,
+			nameEntry.Text,
+			passportEntry.Text,
+			employeeEntry.Text,
+			groupEntry.Text,
+		)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		student := domain.Student{
 			ID:         parseUint64(idEntry.Text),
 			Name:       nameEntry.Text,
@@ -108,7 +150,12 @@ func showUpdateStudentsForm(content *fyne.Container, r *repository.Repository) {
 			GroupID:    parseUint64(groupEntry.Text),
 		}
 
-		err := r.Students.Update(context.Background(), student.ID, student)
+		if err = validation.ValidateStruct(student); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Students.Update(context.Background(), student.ID, student)
 		showResult(content, err, "Студент обновлён")
 	})
 
