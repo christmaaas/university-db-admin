@@ -1,5 +1,10 @@
 package repository
 
+/*
+	here will be special requests to database
+	which the developer defined
+*/
+
 import (
 	"context"
 	"university-db-admin/internal/domain"

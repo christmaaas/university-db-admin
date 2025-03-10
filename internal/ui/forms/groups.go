@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -33,11 +34,22 @@ func showAddGroupsForm(content *fyne.Container, r *repository.Repository) {
 	numberEntry.SetPlaceHolder("Номер")
 
 	submitButton := widget.NewButton("Добавить", func() {
+		err := validation.ValidateEmptyStrings(numberEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		group := domain.Group{
 			Number: parseUint64(numberEntry.Text),
 		}
 
-		err := r.Groups.Create(context.Background(), group)
+		if err = validation.ValidateStruct(group); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Groups.Create(context.Background(), group)
 		showResult(content, err, "Группа успешно добавлена")
 	})
 
@@ -55,7 +67,20 @@ func showDeleteGroupsForm(content *fyne.Container, r *repository.Repository) {
 	idEntry.SetPlaceHolder("ID группы")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.Groups.Delete(context.Background(), parseUint64(idEntry.Text))
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumber(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Groups.Delete(context.Background(), id)
 		showResult(content, err, "Группа удалена")
 	})
 
@@ -76,12 +101,23 @@ func showUpdateGroupsForm(content *fyne.Container, r *repository.Repository) {
 	numberEntry.SetPlaceHolder("Новый номер")
 
 	updateButton := widget.NewButton("Обновить", func() {
+		err := validation.ValidateEmptyStrings(idEntry.Text, numberEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		group := domain.Group{
 			ID:     parseUint64(idEntry.Text),
 			Number: parseUint64(numberEntry.Text),
 		}
 
-		err := r.Groups.Update(context.Background(), group.ID, group)
+		if err = validation.ValidateStruct(group); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Groups.Update(context.Background(), group.ID, group)
 		showResult(content, err, "Группа обновлена")
 	})
 
