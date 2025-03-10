@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -48,6 +49,19 @@ func showAddLessonsForm(content *fyne.Container, r *repository.Repository) {
 	roomEntry.SetPlaceHolder("Аудитория")
 
 	submitButton := widget.NewButton("Добавить", func() {
+		err := validation.ValidateEmptyStrings(
+			groupEntry.Text,
+			subjectEntry.Text,
+			lTypeEntry.Text,
+			weekEntry.Text,
+			weekdayEntry.Text,
+			roomEntry.Text,
+		)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		lesson := domain.Lesson{
 			GroupID:      parseUint64(groupEntry.Text),
 			SubjectID:    parseUint64(subjectEntry.Text),
@@ -57,7 +71,12 @@ func showAddLessonsForm(content *fyne.Container, r *repository.Repository) {
 			Room:         parseUint64(roomEntry.Text),
 		}
 
-		err := r.Lessons.Create(context.Background(), lesson)
+		if err = validation.ValidateStruct(lesson); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Lessons.Create(context.Background(), lesson)
 		showResult(content, err, "Занятие успешно добавлено")
 	})
 
@@ -80,7 +99,20 @@ func showDeleteLessonsForm(content *fyne.Container, r *repository.Repository) {
 	idEntry.SetPlaceHolder("ID занятия")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.Lessons.Delete(context.Background(), parseUint64(idEntry.Text))
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumber(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Lessons.Delete(context.Background(), id)
 		showResult(content, err, "Занятие удалено")
 	})
 
@@ -116,6 +148,20 @@ func showUpdateLessonsForm(content *fyne.Container, r *repository.Repository) {
 	roomEntry.SetPlaceHolder("Новая аудитория")
 
 	updateButton := widget.NewButton("Обновить", func() {
+		err := validation.ValidateEmptyStrings(
+			idEntry.Text,
+			groupEntry.Text,
+			subjectEntry.Text,
+			lTypeEntry.Text,
+			weekEntry.Text,
+			weekdayEntry.Text,
+			roomEntry.Text,
+		)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		lesson := domain.Lesson{
 			ID:           parseUint64(idEntry.Text),
 			GroupID:      parseUint64(groupEntry.Text),
@@ -126,7 +172,12 @@ func showUpdateLessonsForm(content *fyne.Container, r *repository.Repository) {
 			Room:         parseUint64(roomEntry.Text),
 		}
 
-		err := r.Lessons.Update(context.Background(), lesson.ID, lesson)
+		if err = validation.ValidateStruct(lesson); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Lessons.Update(context.Background(), lesson.ID, lesson)
 		showResult(content, err, "Занятие обновлено")
 	})
 
