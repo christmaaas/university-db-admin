@@ -88,7 +88,7 @@ func showDeleteEmployeesForm(content *fyne.Container, r *repository.Repository) 
 		}
 
 		id := parseUint64(idEntry.Text)
-		err = validation.ValidatePositiveNumber(id)
+		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
 			showResult(content, err, "")
 			return

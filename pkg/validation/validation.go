@@ -19,9 +19,11 @@ func ValidateEmptyStrings(fields ...string) error {
 }
 
 // validates positive numbers
-func ValidatePositiveNumber(num any) error {
-	if err := validate.Var(num, "gt=0"); err != nil {
-		return errors.New("поле должно быть положительным")
+func ValidatePositiveNumbers(nums ...any) error {
+	for _, num := range nums {
+		if err := validate.Var(num, "gt=0"); err != nil {
+			return errors.New("число должно быть положительным")
+		}
 	}
 	return nil
 }
