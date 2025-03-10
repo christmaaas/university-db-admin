@@ -1,7 +1,6 @@
 package forms
 
 import (
-	"log"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -9,24 +8,25 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// TODO: change error handling to avoid fatal exit
+// parses uint64 with error handling
 func parseUint64(value string) uint64 {
 	num, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
-		log.Fatalln(err)
+		return 0 // if 0 is returned it will be further validated
 	}
 	return num
 }
 
-// TODO: change error handling to avoid fatal exit
+// parses uint16 with error handling
 func parseUint16(value string) uint16 {
 	num, err := strconv.ParseUint(value, 10, 16)
 	if err != nil {
-		log.Fatalln(err)
+		return 0 // if 0 is returned it will be further validated
 	}
 	return uint16(num)
 }
 
+// displays a message depending on whether an error occurs
 func showResult(content *fyne.Container, err error, successMessage string) {
 	content.Objects = nil
 	var labelText string
@@ -41,6 +41,7 @@ func showResult(content *fyne.Container, err error, successMessage string) {
 	content.Refresh()
 }
 
+// recreates the table with new content
 func updateTable(headers []string, data [][]string) *fyne.Container {
 	table := widget.NewTable(
 		func() (int, int) { return len(data) + 1, len(headers) },

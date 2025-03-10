@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -39,13 +40,28 @@ func showAddEmployeesForm(content *fyne.Container, r *repository.Repository) {
 	positionEntry.SetPlaceHolder("ID Должности")
 
 	submitButton := widget.NewButton("Добавить", func() {
+		err := validation.ValidateEmptyStrings(
+			nameEntry.Text,
+			passportEntry.Text,
+			positionEntry.Text,
+		)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		employee := domain.Employee{
 			Name:       nameEntry.Text,
 			Passport:   passportEntry.Text,
 			PositionID: parseUint64(positionEntry.Text),
 		}
 
-		err := r.Employees.Create(context.Background(), employee)
+		if err = validation.ValidateStruct(employee); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Employees.Create(context.Background(), employee)
 		showResult(content, err, "Сотрудник успешно добавлен")
 	})
 
@@ -65,7 +81,20 @@ func showDeleteEmployeesForm(content *fyne.Container, r *repository.Repository) 
 	idEntry.SetPlaceHolder("ID сотрудника")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.Employees.Delete(context.Background(), parseUint64(idEntry.Text))
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumber(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Employees.Delete(context.Background(), id)
 		showResult(content, err, "Сотрудник удалён")
 	})
 
@@ -92,6 +121,17 @@ func showUpdateEmployeesForm(content *fyne.Container, r *repository.Repository) 
 	positionEntry.SetPlaceHolder("Новый ID Должности")
 
 	updateButton := widget.NewButton("Обновить", func() {
+		err := validation.ValidateEmptyStrings(
+			idEntry.Text,
+			nameEntry.Text,
+			passportEntry.Text,
+			positionEntry.Text,
+		)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		employee := domain.Employee{
 			ID:         parseUint64(idEntry.Text),
 			Name:       nameEntry.Text,
@@ -99,7 +139,12 @@ func showUpdateEmployeesForm(content *fyne.Container, r *repository.Repository) 
 			PositionID: parseUint64(positionEntry.Text),
 		}
 
-		err := r.Employees.Update(context.Background(), employee.ID, employee)
+		if err = validation.ValidateStruct(employee); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Employees.Update(context.Background(), employee.ID, employee)
 		showResult(content, err, "Сотрудник обновлён")
 	})
 
