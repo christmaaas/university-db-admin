@@ -6,14 +6,15 @@ import (
 )
 
 type Repository struct {
-	Employees   Employees
-	Groups      Groups
-	LessonTypes LessonTypes
-	Lessons     Lessons
-	Marks       Marks
-	Positions   Positions
-	Students    Students
-	Subjects    Subjects
+	Employees         Employees
+	Groups            Groups
+	LessonTypes       LessonTypes
+	Lessons           Lessons
+	Marks             Marks
+	Positions         Positions
+	Students          Students
+	Subjects          Subjects
+	EmployeesSubjects EmployeesSubjects
 }
 
 type Employees interface {
@@ -100,4 +101,13 @@ type Subjects interface {
 	FindByName(ctx context.Context, name string) (domain.Subject, error)
 	Update(ctx context.Context, id uint64, sbj domain.Subject) error
 	Delete(ctx context.Context, id uint64) error
+}
+
+type EmployeesSubjects interface {
+	Create(ctx context.Context, es domain.EmployeeSubject) error
+	FindAll(ctx context.Context) ([]domain.EmployeeSubject, error)
+	FindByEmployeeID(ctx context.Context, id uint64) ([]domain.EmployeeSubject, error)
+	FindBySubjectID(ctx context.Context, id uint64) ([]domain.EmployeeSubject, error)
+	Update(ctx context.Context, eid uint64, sid uint64, es domain.EmployeeSubject) error
+	Delete(ctx context.Context, eid uint64, sid uint64) error
 }

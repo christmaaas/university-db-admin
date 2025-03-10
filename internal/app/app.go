@@ -26,26 +26,28 @@ func NewApp() App {
 	log.Println("initializing repositories")
 	empRepo := postgres.NewEmployeesRepository(pgClient)
 	grpRepo := postgres.NewGroupsRepository(pgClient)
-	lsnTpsRepo := postgres.NewLessonTypesRepository(pgClient)
 	lsnRepo := postgres.NewLessonsRepository(pgClient)
-	marksRepo := postgres.NewMarksRepository(pgClient)
 	posRepo := postgres.NewPositionsRepository(pgClient)
-	studRepo := postgres.NewStudentsRepository(pgClient)
 	sbjRepo := postgres.NewSubjectsRepository(pgClient)
+	studRepo := postgres.NewStudentsRepository(pgClient)
+	marksRepo := postgres.NewMarksRepository(pgClient)
+	lsnTpsRepo := postgres.NewLessonTypesRepository(pgClient)
+	empSbjRepo := postgres.NewEmployeesSubjectsRepository(pgClient)
 
 	log.Println("application initialized")
 
 	return App{
 		cfg: cfg,
 		repository: &repository.Repository{
-			Employees:   empRepo,
-			Groups:      grpRepo,
-			LessonTypes: lsnTpsRepo,
-			Lessons:     lsnRepo,
-			Marks:       marksRepo,
-			Positions:   posRepo,
-			Students:    studRepo,
-			Subjects:    sbjRepo,
+			Employees:         empRepo,
+			Groups:            grpRepo,
+			LessonTypes:       lsnTpsRepo,
+			Lessons:           lsnRepo,
+			Marks:             marksRepo,
+			Positions:         posRepo,
+			Students:          studRepo,
+			Subjects:          sbjRepo,
+			EmployeesSubjects: empSbjRepo,
 		},
 	}
 }
