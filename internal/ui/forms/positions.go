@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -33,11 +34,22 @@ func showAddPositionsForm(content *fyne.Container, r *repository.Repository) {
 	nameEntry.SetPlaceHolder("Название")
 
 	submitButton := widget.NewButton("Добавить", func() {
+		err := validation.ValidateEmptyStrings(nameEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		pos := domain.Position{
 			Name: nameEntry.Text,
 		}
 
-		err := r.Positions.Create(context.Background(), pos)
+		if err = validation.ValidateStruct(pos); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Positions.Create(context.Background(), pos)
 		showResult(content, err, "Должность добавлена")
 	})
 
@@ -55,7 +67,20 @@ func showDeletePositionsForm(content *fyne.Container, r *repository.Repository) 
 	idEntry.SetPlaceHolder("ID должности")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.Positions.Delete(context.Background(), parseUint64(idEntry.Text))
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumber(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Positions.Delete(context.Background(), id)
 		showResult(content, err, "Должность удалена")
 	})
 
@@ -76,12 +101,23 @@ func showUpdatePositionsForm(content *fyne.Container, r *repository.Repository) 
 	nameEntry.SetPlaceHolder("Новое название")
 
 	updateButton := widget.NewButton("Обновить", func() {
+		err := validation.ValidateEmptyStrings(idEntry.Text, nameEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		pos := domain.Position{
 			ID:   parseUint64(idEntry.Text),
 			Name: nameEntry.Text,
 		}
 
-		err := r.Positions.Update(context.Background(), pos.ID, pos)
+		if err = validation.ValidateStruct(pos); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Positions.Update(context.Background(), pos.ID, pos)
 		showResult(content, err, "Должность обновлена")
 	})
 
