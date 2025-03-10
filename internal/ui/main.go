@@ -27,6 +27,7 @@ func Run(r *repository.Repository) {
 		"Должности",
 		"Студенты",
 		"Предметы",
+		"Знание предметов",
 	}
 	entitySelect := widget.NewSelect(options, nil)
 
@@ -60,6 +61,8 @@ func updateContent(content *fyne.Container, action, entity string, r *repository
 		forms.ShowStudentsForm(content, action, r)
 	case "Предметы":
 		forms.ShowSubjectsForm(content, action, r)
+	case "Знание предметов":
+		forms.ShowEmployeesSubjectsForm(content, action, r)
 	}
 
 	content.Refresh()
