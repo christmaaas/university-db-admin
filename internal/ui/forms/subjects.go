@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -36,12 +37,23 @@ func showAddSubjectsForm(content *fyne.Container, r *repository.Repository) {
 	dscrEntry.SetPlaceHolder("Описание")
 
 	submitButton := widget.NewButton("Добавить", func() {
+		err := validation.ValidateEmptyStrings(nameEntry.Text, dscrEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		sbj := domain.Subject{
 			Name:        nameEntry.Text,
 			Description: dscrEntry.Text,
 		}
 
-		err := r.Subjects.Create(context.Background(), sbj)
+		if err = validation.ValidateStruct(sbj); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Subjects.Create(context.Background(), sbj)
 		showResult(content, err, "Предмет добавлен")
 	})
 
@@ -60,7 +72,20 @@ func showDeleteSubjectsForm(content *fyne.Container, r *repository.Repository) {
 	idEntry.SetPlaceHolder("ID предмета")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.Subjects.Delete(context.Background(), parseUint64(idEntry.Text))
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumber(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Subjects.Delete(context.Background(), id)
 		showResult(content, err, "Предмет удален")
 	})
 
@@ -84,13 +109,28 @@ func showUpdateSubjectsForm(content *fyne.Container, r *repository.Repository) {
 	dscrEntry.SetPlaceHolder("Новое описание")
 
 	updateButton := widget.NewButton("Обновить", func() {
+		err := validation.ValidateEmptyStrings(
+			idEntry.Text,
+			nameEntry.Text,
+			dscrEntry.Text,
+		)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		sbj := domain.Subject{
 			ID:          parseUint64(idEntry.Text),
 			Name:        nameEntry.Text,
 			Description: dscrEntry.Text,
 		}
 
-		err := r.Subjects.Update(context.Background(), sbj.ID, sbj)
+		if err = validation.ValidateStruct(sbj); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Subjects.Update(context.Background(), sbj.ID, sbj)
 		showResult(content, err, "Предмет обновлен")
 	})
 
