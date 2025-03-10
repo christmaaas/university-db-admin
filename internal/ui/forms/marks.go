@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -28,24 +29,6 @@ func ShowMarksForm(content *fyne.Container, action string, r *repository.Reposit
 	content.Refresh()
 }
 
-func isEmployeeTeacher(r *repository.Repository, id uint64) (bool, error) {
-	var (
-		emp domain.Employee
-		pos domain.Position
-		err error
-	)
-	emp, err = r.Employees.FindOne(context.Background(), id)
-	if err == nil {
-		pos, err = r.Positions.FindOne(context.Background(), emp.PositionID)
-		if err == nil {
-			if pos.Name == "Преподаватель" {
-				return true, nil
-			}
-		}
-	}
-	return false, err
-}
-
 func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 	employeeEntry := widget.NewEntry()
 	employeeEntry.SetPlaceHolder("ID преподавателя")
@@ -63,17 +46,15 @@ func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 	dateEntry.SetPlaceHolder("Дата (YYYY-MM-DD)")
 
 	submitButton := widget.NewButton("Добавить", func() {
-		isT, err := isEmployeeTeacher(r, parseUint64(employeeEntry.Text))
+		err := validation.ValidateEmptyStrings(
+			employeeEntry.Text,
+			studentEntry.Text,
+			subjectEntry.Text,
+			markEntry.Text,
+			dateEntry.Text,
+		)
 		if err != nil {
 			showResult(content, err, "")
-			return
-		}
-		if !isT {
-			showResult(
-				content,
-				err,
-				"Ошибка: Указанный сотрудник не является преподавателем",
-			)
 			return
 		}
 
@@ -83,6 +64,23 @@ func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 			SubjectID:  parseUint64(subjectEntry.Text),
 			Mark:       parseUint16(markEntry.Text),
 			Date:       dateEntry.Text,
+		}
+
+		if err = validation.ValidateStruct(mark); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		isT, err := r.IsEmployeeTeacher(parseUint64(employeeEntry.Text))
+		if !isT {
+			if err != nil {
+				showResult(content, err, "")
+			} else {
+				showResult(content, err,
+					"Ошибка: Указанный сотрудник не является преподавателем",
+				)
+			}
+			return
 		}
 
 		err = r.Marks.Create(context.Background(), mark)
@@ -107,7 +105,20 @@ func showDeleteMarksForm(content *fyne.Container, r *repository.Repository) {
 	idEntry.SetPlaceHolder("ID оценки")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.Marks.Delete(context.Background(), parseUint64(idEntry.Text))
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumber(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.Marks.Delete(context.Background(), id)
 		showResult(content, err, "Оценка удалена")
 	})
 
@@ -131,7 +142,7 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 	studentEntry.SetPlaceHolder("Новый ID студента")
 
 	subjectEntry := widget.NewEntry()
-	subjectEntry.SetPlaceHolder("Ноывй ID предмета")
+	subjectEntry.SetPlaceHolder("Новый ID предмета")
 
 	markEntry := widget.NewEntry()
 	markEntry.SetPlaceHolder("Новая оценка")
@@ -140,6 +151,19 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 	dateEntry.SetPlaceHolder("Новая дата (YYYY-MM-DD)")
 
 	updateButton := widget.NewButton("Обновить", func() {
+		err := validation.ValidateEmptyStrings(
+			idEntry.Text,
+			employeeEntry.Text,
+			studentEntry.Text,
+			subjectEntry.Text,
+			markEntry.Text,
+			dateEntry.Text,
+		)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		mark := domain.Mark{
 			ID:         parseUint64(idEntry.Text),
 			EmployeeID: parseUint64(employeeEntry.Text),
@@ -149,7 +173,24 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 			Date:       dateEntry.Text,
 		}
 
-		err := r.Marks.Update(context.Background(), mark.ID, mark)
+		if err = validation.ValidateStruct(mark); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		isT, err := r.IsEmployeeTeacher(parseUint64(employeeEntry.Text))
+		if !isT {
+			if err != nil {
+				showResult(content, err, "")
+			} else {
+				showResult(content, err,
+					"Ошибка: Указанный сотрудник не является преподавателем",
+				)
+			}
+			return
+		}
+
+		err = r.Marks.Update(context.Background(), mark.ID, mark)
 		showResult(content, err, "Оценка обновлена")
 	})
 
