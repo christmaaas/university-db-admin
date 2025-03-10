@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -33,11 +34,22 @@ func showAddLessonTypesForm(content *fyne.Container, r *repository.Repository) {
 	nameEntry.SetPlaceHolder("Название")
 
 	submitButton := widget.NewButton("Добавить", func() {
+		err := validation.ValidateEmptyStrings(nameEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		lessonType := domain.LessonType{
 			Name: nameEntry.Text,
 		}
 
-		err := r.LessonTypes.Create(context.Background(), lessonType)
+		if err = validation.ValidateStruct(lessonType); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.LessonTypes.Create(context.Background(), lessonType)
 		showResult(content, err, "Тип занятия добавлен")
 	})
 
@@ -55,7 +67,20 @@ func showDeleteLessonTypesForm(content *fyne.Container, r *repository.Repository
 	idEntry.SetPlaceHolder("ID типа занятия")
 
 	deleteButton := widget.NewButton("Удалить", func() {
-		err := r.LessonTypes.Delete(context.Background(), parseUint64(idEntry.Text))
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumber(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.LessonTypes.Delete(context.Background(), id)
 		showResult(content, err, "Тип занятия удален")
 	})
 
@@ -76,12 +101,23 @@ func showUpdateLessonTypesForm(content *fyne.Container, r *repository.Repository
 	nameEntry.SetPlaceHolder("Новое название")
 
 	updateButton := widget.NewButton("Обновить", func() {
+		err := validation.ValidateEmptyStrings(idEntry.Text, nameEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
 		lType := domain.LessonType{
 			ID:   parseUint64(idEntry.Text),
 			Name: nameEntry.Text,
 		}
 
-		err := r.LessonTypes.Update(context.Background(), lType.ID, lType)
+		if err = validation.ValidateStruct(lType); err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		err = r.LessonTypes.Update(context.Background(), lType.ID, lType)
 		showResult(content, err, "Тип занятия обновлен")
 	})
 
