@@ -12,7 +12,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 
 	switch action {
 	case 0:
-		// TODO
+		showEmployeesInfoForm(content, r)
 	case 1:
 		// TODO
 	case 2:
@@ -57,6 +57,24 @@ func showLessonsScheduleForm(content *fyne.Container, r *repository.Repository) 
 	}
 
 	data, err := r.Special.GetScheduleByGroups(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
+
+	content.Add(updateTable(headers, data))
+	content.Refresh()
+}
+
+func showEmployeesInfoForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ФИО",
+		"Номер паспорта",
+	}
+
+	data, err := r.Special.GetAllEmployeesInfo(context.Background())
 	if err != nil {
 		showResult(content, err, "Ошибка при поиске")
 		return
