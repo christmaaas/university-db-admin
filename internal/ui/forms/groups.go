@@ -12,17 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowGroupsForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowGroupsForm(content *fyne.Container, action int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
-	case "Добавить":
+	case 0:
 		showAddGroupsForm(content, r)
-	case "Удалить":
+	case 1:
 		showDeleteGroupsForm(content, r)
-	case "Обновить":
+	case 2:
 		showUpdateGroupsForm(content, r)
-	case "Просмотреть":
+	case 3:
 		showGroupsList(content, r)
 	}
 

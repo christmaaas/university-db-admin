@@ -12,17 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowLessonTypesForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowLessonTypesForm(content *fyne.Container, action int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
-	case "Добавить":
+	case 0:
 		showAddLessonTypesForm(content, r)
-	case "Удалить":
+	case 1:
 		showDeleteLessonTypesForm(content, r)
-	case "Обновить":
+	case 2:
 		showUpdateLessonTypesForm(content, r)
-	case "Просмотреть":
+	case 3:
 		showLessonTypesList(content, r)
 	}
 

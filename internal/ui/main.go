@@ -66,7 +66,7 @@ func showEntitySelection(content *fyne.Container, r *repository.Repository) {
 
 	contentContainer := container.NewVBox()
 	executeButton := widget.NewButton("Применить", func() {
-		updateEntityContent(contentContainer, actionSelect.Selected, entitySelect.Selected, r)
+		updateEntityContent(contentContainer, actionSelect.SelectedIndex(), entitySelect.SelectedIndex(), r)
 	})
 
 	backButton := widget.NewButton("Меню", func() {
@@ -116,27 +116,27 @@ func showSpecialQuerySelection(content *fyne.Container, r *repository.Repository
 	content.Refresh()
 }
 
-func updateEntityContent(content *fyne.Container, action, entity string, r *repository.Repository) {
+func updateEntityContent(content *fyne.Container, action, entity int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch entity {
-	case "Сотрудники":
+	case 0:
 		forms.ShowEmployeesForm(content, action, r)
-	case "Группы":
+	case 1:
 		forms.ShowGroupsForm(content, action, r)
-	case "Типы занятий":
+	case 2:
 		forms.ShowLessonTypesForm(content, action, r)
-	case "Занятия":
+	case 3:
 		forms.ShowLessonsForm(content, action, r)
-	case "Оценки":
+	case 4:
 		forms.ShowMarksForm(content, action, r)
-	case "Должности":
+	case 5:
 		forms.ShowPositionsForm(content, action, r)
-	case "Студенты":
+	case 6:
 		forms.ShowStudentsForm(content, action, r)
-	case "Предметы":
+	case 7:
 		forms.ShowSubjectsForm(content, action, r)
-	case "Знание предметов":
+	case 8:
 		forms.ShowEmployeesSubjectsForm(content, action, r)
 	}
 
