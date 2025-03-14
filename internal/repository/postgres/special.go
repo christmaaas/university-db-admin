@@ -9,17 +9,17 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type specialRepository struct {
+type specialRequestsRepository struct {
 	dbclient *pgx.Conn
 }
 
 func NewSpecialRepository(dbclient *pgx.Conn) repository.Special {
-	return &specialRepository{
+	return &specialRequestsRepository{
 		dbclient: dbclient,
 	}
 }
 
-func (r *specialRepository) IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error) {
+func (r *specialRequestsRepository) IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error) {
 	const teacherName = "Преподаватель"
 	query := `
 		SELECT EXISTS (
@@ -39,7 +39,7 @@ func (r *specialRepository) IsEmployeeTeacher(ctx context.Context, id uint64) (b
 	return exists, nil
 }
 
-func (r *specialRepository) GetScheduleByGroups(ctx context.Context) ([][]string, error) {
+func (r *specialRequestsRepository) GetScheduleByGroups(ctx context.Context) ([][]string, error) {
 	sql := `
 		SELECT groups.number,
 			subjects.name,
