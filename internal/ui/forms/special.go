@@ -3,8 +3,11 @@ package forms
 import (
 	"context"
 	"university-db-admin/internal/repository"
+	"university-db-admin/pkg/validation"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Repository) {
@@ -14,7 +17,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 0:
 		showEmployeesInfoForm(content, r)
 	case 1:
-		// TODO
+		showEmployeeInfoForm(content, r)
 	case 2:
 		// TODO
 	case 3:
@@ -81,5 +84,51 @@ func showEmployeesInfoForm(content *fyne.Container, r *repository.Repository) {
 	}
 
 	content.Add(updateTable(headers, data))
+	content.Refresh()
+}
+
+func showEmployeeInfoForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ФИО",
+		"Номер паспорта",
+	}
+
+	idEntry := widget.NewEntry()
+	idEntry.SetPlaceHolder("ID Сотрудника")
+
+	submitButton := widget.NewButton("Применить", func() {
+		err := validation.ValidateEmptyStrings(idEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(idEntry.Text)
+		err = validation.ValidatePositiveNumbers(id)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		data, err := r.Special.GetAllEmployeesInfoByID(context.Background(), id)
+		if err != nil {
+			showResult(content, err, "Ошибка при поиске")
+			return
+		}
+
+		content.Objects = content.Objects[:1]
+		content.Add(updateTable(headers, data))
+		content.Refresh()
+	})
+
+	form := container.NewVBox(
+		widget.NewLabel("Выбор сотрудника"),
+		idEntry,
+		submitButton,
+	)
+
+	content.Add(form)
 	content.Refresh()
 }

@@ -134,3 +134,42 @@ func (r *specialRequestsRepository) GetAllEmployeesInfo(ctx context.Context) ([]
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetAllEmployeesInfoByID(ctx context.Context, id uint64) ([][]string, error) {
+	sql := `
+		SELECT employees.name, employees.passport
+		FROM public.employees
+		WHERE employees.id = $1
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql, id)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			name     string
+			passport string
+		)
+		err := rows.Scan(
+			&name,
+			&passport,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			name,
+			passport,
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
