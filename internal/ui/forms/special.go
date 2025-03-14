@@ -19,7 +19,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 1:
 		showEmployeeInfoForm(content, r)
 	case 2:
-		// TODO
+		showStudentsNoCuratorInfoForm(content, r)
 	case 3:
 		// TODO
 	case 4:
@@ -130,5 +130,24 @@ func showEmployeeInfoForm(content *fyne.Container, r *repository.Repository) {
 	)
 
 	content.Add(form)
+	content.Refresh()
+}
+
+func showStudentsNoCuratorInfoForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ФИО",
+		"Номер паспорта",
+		"ID группы",
+	}
+
+	data, err := r.Special.GetStudentsNoCuratorInfo(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
+
+	content.Add(updateTable(headers, data))
 	content.Refresh()
 }

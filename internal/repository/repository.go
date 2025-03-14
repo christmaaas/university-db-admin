@@ -114,8 +114,9 @@ type EmployeesSubjects interface {
 }
 
 type Special interface {
-	GetScheduleByGroups(ctx context.Context) ([][]string, error)
 	GetAllEmployeesInfo(ctx context.Context) ([][]string, error)
 	GetAllEmployeesInfoByID(ctx context.Context, id uint64) ([][]string, error)
+	GetStudentsNoCuratorInfo(ctx context.Context) ([][]string, error)
+	GetScheduleByGroups(ctx context.Context) ([][]string, error)
 	IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error)
 }

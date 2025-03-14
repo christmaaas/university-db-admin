@@ -173,3 +173,47 @@ func (r *specialRequestsRepository) GetAllEmployeesInfoByID(ctx context.Context,
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetStudentsNoCuratorInfo(ctx context.Context) ([][]string, error) {
+	sql := `
+		SELECT students.name, 
+			students.passport,
+			students.group_id
+		FROM public.students
+		WHERE NOT students.employee_id IS NOT NULL
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			name     string
+			passport string
+			groupID  uint64
+		)
+		err := rows.Scan(
+			&name,
+			&passport,
+			&groupID,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			name,
+			passport,
+			fmt.Sprintf("%d", groupID),
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
