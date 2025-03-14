@@ -217,3 +217,33 @@ func (r *specialRequestsRepository) GetStudentsNoCuratorInfo(ctx context.Context
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetEmployeesInfoByPositionsID(ctx context.Context, firstID, secondID uint64) ([][]string, error) {
+	sql := `
+		SELECT employees.name
+		FROM public.employees
+		WHERE employees.position_id = $1 OR employees.position_id = $2
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql, firstID, secondID)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{name})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}

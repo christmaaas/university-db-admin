@@ -21,7 +21,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 2:
 		showStudentsNoCuratorInfoForm(content, r)
 	case 3:
-		// TODO
+		showEmployeesInfoByPositionsForm(content, r)
 	case 4:
 		// TODO
 	case 5:
@@ -149,5 +149,53 @@ func showStudentsNoCuratorInfoForm(content *fyne.Container, r *repository.Reposi
 	}
 
 	content.Add(updateTable(headers, data))
+	content.Refresh()
+}
+
+func showEmployeesInfoByPositionsForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{"ФИО"}
+
+	firstIDEntry := widget.NewEntry()
+	firstIDEntry.SetPlaceHolder("ID должности")
+
+	secondIDEntry := widget.NewEntry()
+	secondIDEntry.SetPlaceHolder("ID должности")
+
+	submitButton := widget.NewButton("Применить", func() {
+		err := validation.ValidateEmptyStrings(firstIDEntry.Text, secondIDEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		firstID := parseUint64(firstIDEntry.Text)
+		secondID := parseUint64(secondIDEntry.Text)
+		err = validation.ValidatePositiveNumbers(firstID, secondID)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		data, err := r.Special.GetEmployeesInfoByPositionsID(context.Background(), firstID, secondID)
+		if err != nil {
+			showResult(content, err, "Ошибка при поиске")
+			return
+		}
+
+		content.Objects = content.Objects[:1]
+		content.Add(updateTable(headers, data))
+		content.Refresh()
+	})
+
+	form := container.NewVBox(
+		widget.NewLabel("Выбор должностей"),
+		firstIDEntry,
+		secondIDEntry,
+		submitButton,
+	)
+
+	content.Add(form)
 	content.Refresh()
 }
