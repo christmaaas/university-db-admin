@@ -18,7 +18,7 @@ func ValidateEmptyStrings(fields ...string) error {
 	return nil
 }
 
-// validates positive numbers
+// validates all required positive numbers
 func ValidatePositiveNumbers(nums ...any) error {
 	for _, num := range nums {
 		if err := validate.Var(num, "gt=0"); err != nil {

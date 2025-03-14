@@ -15,6 +15,7 @@ type Repository struct {
 	Students          Students
 	Subjects          Subjects
 	EmployeesSubjects EmployeesSubjects
+	Special           Special
 }
 
 type Employees interface {
@@ -110,4 +111,9 @@ type EmployeesSubjects interface {
 	FindBySubjectID(ctx context.Context, id uint64) ([]domain.EmployeeSubject, error)
 	Update(ctx context.Context, eid uint64, sid uint64, es domain.EmployeeSubject) error
 	Delete(ctx context.Context, eid uint64, sid uint64) error
+}
+
+type Special interface {
+	GetScheduleByGroups(ctx context.Context) ([][]string, error)
+	IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error)
 }

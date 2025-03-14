@@ -29,6 +29,7 @@ func NewApp() App {
 	lsnRepo := postgres.NewLessonsRepository(pgClient)
 	posRepo := postgres.NewPositionsRepository(pgClient)
 	sbjRepo := postgres.NewSubjectsRepository(pgClient)
+	specRepo := postgres.NewSpecialRepository(pgClient)
 	studRepo := postgres.NewStudentsRepository(pgClient)
 	marksRepo := postgres.NewMarksRepository(pgClient)
 	lsnTpsRepo := postgres.NewLessonTypesRepository(pgClient)
@@ -48,6 +49,7 @@ func NewApp() App {
 			Students:          studRepo,
 			Subjects:          sbjRepo,
 			EmployeesSubjects: empSbjRepo,
+			Special:           specRepo,
 		},
 	}
 }
