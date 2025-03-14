@@ -67,9 +67,9 @@ func (r *specialRequestsRepository) GetScheduleByGroups(ctx context.Context) ([]
 			groupNumber string
 			subjectName string
 			lessonType  string
-			room        string
-			week        int
-			weekday     int
+			room        uint64
+			week        uint16
+			weekday     uint16
 		)
 		err := rows.Scan(
 			&groupNumber,
@@ -87,7 +87,7 @@ func (r *specialRequestsRepository) GetScheduleByGroups(ctx context.Context) ([]
 			groupNumber,
 			subjectName,
 			lessonType,
-			room,
+			fmt.Sprintf("%d", room),
 			fmt.Sprintf("%d", week),
 			fmt.Sprintf("%d", weekday),
 		})
