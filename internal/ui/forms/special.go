@@ -25,7 +25,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 4:
 		showMarksInfoBySubjectForm(content, r)
 	case 5:
-		// TODO
+		showStudnetsInfoByMiddlenameForm(content, r)
 	case 6:
 		// TODO
 	case 7:
@@ -245,6 +245,45 @@ func showMarksInfoBySubjectForm(content *fyne.Container, r *repository.Repositor
 		widget.NewLabel("Выбор предмета и оценки"),
 		subjectIDEntry,
 		markEntry,
+		submitButton,
+	)
+
+	content.Add(form)
+	content.Refresh()
+}
+
+func showStudnetsInfoByMiddlenameForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ФИО",
+		"Номер паспорта",
+	}
+
+	seqEntry := widget.NewEntry()
+	seqEntry.SetPlaceHolder("Последовательность")
+
+	submitButton := widget.NewButton("Применить", func() {
+		err := validation.ValidateEmptyStrings(seqEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		data, err := r.Special.GetStudentsInfoByMiddlename(context.Background(), seqEntry.Text)
+		if err != nil {
+			showResult(content, err, "Ошибка при поиске")
+			return
+		}
+
+		content.Objects = content.Objects[:1]
+		content.Add(updateTable(headers, data))
+		content.Refresh()
+	})
+
+	form := container.NewVBox(
+		widget.NewLabel("Выбор последовательности"),
+		seqEntry,
 		submitButton,
 	)
 

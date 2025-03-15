@@ -290,3 +290,43 @@ func (r *specialRequestsRepository) GetMarksInfoBySubjectID(ctx context.Context,
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetStudentsInfoByMiddlename(ctx context.Context, m string) ([][]string, error) {
+	sql := `
+		SELECT students.name, students.passport
+		FROM public.students
+		WHERE students.name LIKE $1
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	pattern := "%" + m
+	rows, err := r.dbclient.Query(ctx, sql, pattern)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			name     string
+			passport string
+		)
+		err := rows.Scan(
+			&name,
+			&passport,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			name,
+			passport,
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
