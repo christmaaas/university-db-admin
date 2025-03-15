@@ -585,3 +585,46 @@ func (r *specialRequestsRepository) GetAllStudentsWithAllCurators(ctx context.Co
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetStudentsUppercaseWithLength(ctx context.Context) ([][]string, error) {
+	sql := `
+		SELECT students.id,
+			UPPER(students.name),
+			LENGTH(students.name)
+		FROM public.students
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			id        uint64
+			nameUpper string
+			nameLen   uint64
+		)
+		err := rows.Scan(
+			&id,
+			&nameUpper,
+			&nameLen,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			fmt.Sprintf("%d", id),
+			nameUpper,
+			fmt.Sprintf("%d", nameLen),
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}

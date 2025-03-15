@@ -127,5 +127,6 @@ type Special interface {
 	GetAllStudentsWithCurators(ctx context.Context) ([][]string, error)
 	GetAllCuratorsWithStudents(ctx context.Context) ([][]string, error)
 	GetAllStudentsWithAllCurators(ctx context.Context) ([][]string, error)
+	GetStudentsUppercaseWithLength(ctx context.Context) ([][]string, error)
 	IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error)
 }

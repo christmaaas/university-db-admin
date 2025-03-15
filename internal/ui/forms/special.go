@@ -41,7 +41,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 12:
 		showAllStudentsWithAllCuratorsForm(content, r)
 	case 13:
-		// TODO
+		showStudentsUppercaseWithLengthForm(content, r)
 	}
 
 	content.Refresh()
@@ -394,6 +394,25 @@ func showAllStudentsWithAllCuratorsForm(content *fyne.Container, r *repository.R
 	}
 
 	data, err := r.Special.GetAllStudentsWithAllCurators(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
+
+	content.Add(updateTable(headers, data))
+	content.Refresh()
+}
+
+func showStudentsUppercaseWithLengthForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ID студента",
+		"ФИО в верхнем регистре",
+		"Длина ФИО",
+	}
+
+	data, err := r.Special.GetStudentsUppercaseWithLength(context.Background())
 	if err != nil {
 		showResult(content, err, "Ошибка при поиске")
 		return
