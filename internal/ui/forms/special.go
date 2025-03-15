@@ -47,31 +47,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	content.Refresh()
 }
 
-func showLessonsScheduleForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
-	headers := []string{
-		"Номер группы",
-		"Название предмета",
-		"Тип занятия",
-		"Аудитория",
-		"Неделя",
-		"День недели",
-	}
-
-	data, err := r.Special.GetScheduleByGroups(context.Background())
-	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
-		return
-	}
-
-	content.Add(updateTable(headers, data))
-	content.Refresh()
-}
-
 func showEmployeesInfoForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ФИО",
 		"Номер паспорта",
@@ -84,12 +60,9 @@ func showEmployeesInfoForm(content *fyne.Container, r *repository.Repository) {
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
 
 func showEmployeeInfoForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ФИО",
 		"Номер паспорта",
@@ -130,12 +103,9 @@ func showEmployeeInfoForm(content *fyne.Container, r *repository.Repository) {
 	)
 
 	content.Add(form)
-	content.Refresh()
 }
 
 func showStudentsNoCuratorInfoForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ФИО",
 		"Номер паспорта",
@@ -149,12 +119,9 @@ func showStudentsNoCuratorInfoForm(content *fyne.Container, r *repository.Reposi
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
 
 func showEmployeesInfoByPositionsForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{"ФИО"}
 
 	firstIDEntry := widget.NewEntry()
@@ -197,12 +164,9 @@ func showEmployeesInfoByPositionsForm(content *fyne.Container, r *repository.Rep
 	)
 
 	content.Add(form)
-	content.Refresh()
 }
 
 func showMarksInfoBySubjectForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID студента",
 		"Оценка",
@@ -249,12 +213,9 @@ func showMarksInfoBySubjectForm(content *fyne.Container, r *repository.Repositor
 	)
 
 	content.Add(form)
-	content.Refresh()
 }
 
 func showStudnetsInfoByMiddlenameForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ФИО",
 		"Номер паспорта",
@@ -288,12 +249,9 @@ func showStudnetsInfoByMiddlenameForm(content *fyne.Container, r *repository.Rep
 	)
 
 	content.Add(form)
-	content.Refresh()
 }
 
 func showSortedSubjectsInfoForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{"Название"}
 
 	data, err := r.Special.GetSortedSubjectsInfo(context.Background())
@@ -303,12 +261,9 @@ func showSortedSubjectsInfoForm(content *fyne.Container, r *repository.Repositor
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
 
 func showSortedMarksInfoForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID студента",
 		"Оценка",
@@ -322,12 +277,9 @@ func showSortedMarksInfoForm(content *fyne.Container, r *repository.Repository) 
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
 
 func showAllStudentsGroupsCombsForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ФИО студента",
 		"Номер группы",
@@ -340,12 +292,28 @@ func showAllStudentsGroupsCombsForm(content *fyne.Container, r *repository.Repos
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
+}
+
+func showLessonsScheduleForm(content *fyne.Container, r *repository.Repository) {
+	headers := []string{
+		"Номер группы",
+		"Название предмета",
+		"Тип занятия",
+		"Аудитория",
+		"Неделя",
+		"День недели",
+	}
+
+	data, err := r.Special.GetScheduleByGroups(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
+
+	content.Add(updateTable(headers, data))
 }
 
 func showAllStudentsWithCuratorsForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ФИО студента",
 		"Паспорт студента",
@@ -360,12 +328,9 @@ func showAllStudentsWithCuratorsForm(content *fyne.Container, r *repository.Repo
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
 
 func showAllCuratorsWithStudentsForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ФИО студента",
 		"Паспорт студента",
@@ -380,12 +345,9 @@ func showAllCuratorsWithStudentsForm(content *fyne.Container, r *repository.Repo
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
 
 func showAllStudentsWithAllCuratorsForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ФИО студента",
 		"Паспорт студента",
@@ -400,12 +362,9 @@ func showAllStudentsWithAllCuratorsForm(content *fyne.Container, r *repository.R
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
 
 func showStudentsUppercaseWithLengthForm(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID студента",
 		"ФИО в верхнем регистре",
@@ -419,5 +378,4 @@ func showStudentsUppercaseWithLengthForm(content *fyne.Container, r *repository.
 	}
 
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
