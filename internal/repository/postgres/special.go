@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 	"university-db-admin/internal/repository"
 
 	"github.com/jackc/pgx/v5"
@@ -242,6 +243,48 @@ func (r *specialRequestsRepository) GetEmployeesInfoByPositionsID(ctx context.Co
 		}
 
 		result = append(result, []string{name})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
+func (r *specialRequestsRepository) GetMarksInfoBySubjectID(ctx context.Context, id uint64, m uint16) ([][]string, error) {
+	sql := `
+		SELECT marks.student_id, marks.mark, marks.date
+		FROM public.marks
+		WHERE subject_id = $1 AND mark > $2
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql, id, m)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			studentID uint64
+			mark      uint16
+			date      time.Time
+		)
+		err := rows.Scan(
+			&studentID,
+			&mark,
+			&date,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			fmt.Sprintf("%d", studentID),
+			fmt.Sprintf("%d", mark),
+			date.Format("2006-01-02"),
+		})
 	}
 
 	log.Println("sql result:", result)

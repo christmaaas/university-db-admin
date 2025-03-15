@@ -119,5 +119,6 @@ type Special interface {
 	GetStudentsNoCuratorInfo(ctx context.Context) ([][]string, error)
 	GetScheduleByGroups(ctx context.Context) ([][]string, error)
 	GetEmployeesInfoByPositionsID(ctx context.Context, firstID, secondID uint64) ([][]string, error)
+	GetMarksInfoBySubjectID(ctx context.Context, id uint64, m uint16) ([][]string, error)
 	IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error)
 }

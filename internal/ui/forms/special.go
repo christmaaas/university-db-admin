@@ -23,7 +23,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 3:
 		showEmployeesInfoByPositionsForm(content, r)
 	case 4:
-		// TODO
+		showMarksInfoBySubjectForm(content, r)
 	case 5:
 		// TODO
 	case 6:
@@ -193,6 +193,58 @@ func showEmployeesInfoByPositionsForm(content *fyne.Container, r *repository.Rep
 		widget.NewLabel("Выбор должностей"),
 		firstIDEntry,
 		secondIDEntry,
+		submitButton,
+	)
+
+	content.Add(form)
+	content.Refresh()
+}
+
+func showMarksInfoBySubjectForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ID студента",
+		"Оценка",
+		"Дата",
+	}
+
+	subjectIDEntry := widget.NewEntry()
+	subjectIDEntry.SetPlaceHolder("ID предмета")
+
+	markEntry := widget.NewEntry()
+	markEntry.SetPlaceHolder("Оценка")
+
+	submitButton := widget.NewButton("Применить", func() {
+		err := validation.ValidateEmptyStrings(subjectIDEntry.Text, markEntry.Text)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		id := parseUint64(subjectIDEntry.Text)
+		mark := parseUint16(markEntry.Text)
+		err = validation.ValidatePositiveNumbers(id, mark)
+		if err != nil {
+			showResult(content, err, "")
+			return
+		}
+
+		data, err := r.Special.GetMarksInfoBySubjectID(context.Background(), id, mark)
+		if err != nil {
+			showResult(content, err, "Ошибка при поиске")
+			return
+		}
+
+		content.Objects = content.Objects[:1]
+		content.Add(updateTable(headers, data))
+		content.Refresh()
+	})
+
+	form := container.NewVBox(
+		widget.NewLabel("Выбор предмета и оценки"),
+		subjectIDEntry,
+		markEntry,
 		submitButton,
 	)
 
