@@ -31,7 +31,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 7:
 		showSortedMarksInfoForm(content, r)
 	case 8:
-		// TODO
+		showAllStudentsWithGroupsInfoForm(content, r)
 	case 9:
 		showLessonsScheduleForm(content, r)
 	case 10:
@@ -316,6 +316,24 @@ func showSortedMarksInfoForm(content *fyne.Container, r *repository.Repository) 
 	}
 
 	data, err := r.Special.GetSortedMarksInfo(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
+
+	content.Add(updateTable(headers, data))
+	content.Refresh()
+}
+
+func showAllStudentsWithGroupsInfoForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ФИО студента",
+		"Номер группы",
+	}
+
+	data, err := r.Special.GetAllStudentsWithGroupsInfo(context.Background())
 	if err != nil {
 		showResult(content, err, "Ошибка при поиске")
 		return

@@ -402,3 +402,42 @@ func (r *specialRequestsRepository) GetSortedMarksInfo(ctx context.Context) ([][
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetAllStudentsWithGroupsInfo(ctx context.Context) ([][]string, error) {
+	sql := `
+		SELECT students.name, groups.number
+		FROM public.students
+		CROSS JOIN public.groups
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			name   string
+			number uint64
+		)
+		err := rows.Scan(
+			&name,
+			&number,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			name,
+			fmt.Sprintf("%d", number),
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
