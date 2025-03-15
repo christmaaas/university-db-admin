@@ -489,3 +489,51 @@ func (r *specialRequestsRepository) GetAllStudentsWithCurators(ctx context.Conte
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetAllCuratorsWithStudents(ctx context.Context) ([][]string, error) {
+	sql := `
+		SELECT students.name,
+			students.passport,
+			employees.name,
+			employees.passport
+		FROM public.students
+		RIGHT OUTER JOIN employees ON students.employee_id = employees.id;
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			studName     string
+			studPassport string
+			empName      string
+			empPassport  string
+		)
+		err := rows.Scan(
+			&studName,
+			&studPassport,
+			&empName,
+			&empPassport,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			studName,
+			studPassport,
+			empName,
+			empPassport,
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}

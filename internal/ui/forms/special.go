@@ -37,7 +37,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 10:
 		showAllStudentsWithCuratorsForm(content, r)
 	case 11:
-		// TODO
+		showAllCuratorsWithStudentsForm(content, r)
 	case 12:
 		// TODO
 	case 13:
@@ -350,10 +350,30 @@ func showAllStudentsWithCuratorsForm(content *fyne.Container, r *repository.Repo
 		"ФИО студента",
 		"Паспорт студента",
 		"ФИО куратора",
-		"Пасорт куратора",
+		"Паспорт куратора",
 	}
 
 	data, err := r.Special.GetAllStudentsWithCurators(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
+
+	content.Add(updateTable(headers, data))
+	content.Refresh()
+}
+
+func showAllCuratorsWithStudentsForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ФИО студента",
+		"Паспорт студента",
+		"ФИО куратора",
+		"Паспорт куратора",
+	}
+
+	data, err := r.Special.GetAllCuratorsWithStudents(context.Background())
 	if err != nil {
 		showResult(content, err, "Ошибка при поиске")
 		return
