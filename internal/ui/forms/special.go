@@ -31,11 +31,11 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 7:
 		showSortedMarksInfoForm(content, r)
 	case 8:
-		showAllStudentsWithGroupsInfoForm(content, r)
+		showAllStudentsGroupsCombsForm(content, r)
 	case 9:
 		showLessonsScheduleForm(content, r)
 	case 10:
-		// TODO
+		showAllStudentsWithCuratorsForm(content, r)
 	case 11:
 		// TODO
 	case 12:
@@ -325,7 +325,7 @@ func showSortedMarksInfoForm(content *fyne.Container, r *repository.Repository) 
 	content.Refresh()
 }
 
-func showAllStudentsWithGroupsInfoForm(content *fyne.Container, r *repository.Repository) {
+func showAllStudentsGroupsCombsForm(content *fyne.Container, r *repository.Repository) {
 	content.Objects = nil
 
 	headers := []string{
@@ -333,7 +333,27 @@ func showAllStudentsWithGroupsInfoForm(content *fyne.Container, r *repository.Re
 		"Номер группы",
 	}
 
-	data, err := r.Special.GetAllStudentsWithGroupsInfo(context.Background())
+	data, err := r.Special.GetAllStudentsGroupsCombs(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
+
+	content.Add(updateTable(headers, data))
+	content.Refresh()
+}
+
+func showAllStudentsWithCuratorsForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{
+		"ФИО студента",
+		"Паспорт студента",
+		"ФИО куратора",
+		"Пасорт куратора",
+	}
+
+	data, err := r.Special.GetAllStudentsWithCurators(context.Background())
 	if err != nil {
 		showResult(content, err, "Ошибка при поиске")
 		return

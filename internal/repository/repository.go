@@ -123,6 +123,7 @@ type Special interface {
 	GetStudentsInfoByMiddlename(ctx context.Context, m string) ([][]string, error)
 	GetSortedSubjectsInfo(ctx context.Context) ([][]string, error)
 	GetSortedMarksInfo(ctx context.Context) ([][]string, error)
-	GetAllStudentsWithGroupsInfo(ctx context.Context) ([][]string, error)
+	GetAllStudentsGroupsCombs(ctx context.Context) ([][]string, error)
+	GetAllStudentsWithCurators(ctx context.Context) ([][]string, error)
 	IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error)
 }
