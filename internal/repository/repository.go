@@ -121,5 +121,6 @@ type Special interface {
 	GetEmployeesInfoByPositionsID(ctx context.Context, firstID, secondID uint64) ([][]string, error)
 	GetMarksInfoBySubjectID(ctx context.Context, id uint64, m uint16) ([][]string, error)
 	GetStudentsInfoByMiddlename(ctx context.Context, m string) ([][]string, error)
+	GetSortedSubjectsInfo(ctx context.Context) ([][]string, error)
 	IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error)
 }

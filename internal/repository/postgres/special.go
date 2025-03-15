@@ -330,3 +330,33 @@ func (r *specialRequestsRepository) GetStudentsInfoByMiddlename(ctx context.Cont
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetSortedSubjectsInfo(ctx context.Context) ([][]string, error) {
+	sql := `
+		SELECT subjects.name
+		FROM public.subjects
+		ORDER BY subjects.name ASC
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{name})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}

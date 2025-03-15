@@ -27,7 +27,7 @@ func ShowSpecialQueryForm(content *fyne.Container, action int, r *repository.Rep
 	case 5:
 		showStudnetsInfoByMiddlenameForm(content, r)
 	case 6:
-		// TODO
+		showSortedSubjectsInfoForm(content, r)
 	case 7:
 		// TODO
 	case 8:
@@ -288,5 +288,20 @@ func showStudnetsInfoByMiddlenameForm(content *fyne.Container, r *repository.Rep
 	)
 
 	content.Add(form)
+	content.Refresh()
+}
+
+func showSortedSubjectsInfoForm(content *fyne.Container, r *repository.Repository) {
+	content.Objects = nil
+
+	headers := []string{"Название"}
+
+	data, err := r.Special.GetSortedSubjectsInfo(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
+
+	content.Add(updateTable(headers, data))
 	content.Refresh()
 }
