@@ -360,3 +360,45 @@ func (r *specialRequestsRepository) GetSortedSubjectsInfo(ctx context.Context) (
 	log.Println("sql result:", result)
 	return result, nil
 }
+
+func (r *specialRequestsRepository) GetSortedMarksInfo(ctx context.Context) ([][]string, error) {
+	sql := `
+		SELECT marks.student_id, marks.mark, marks.date
+		FROM public.marks
+		ORDER BY marks.date ASC, marks.mark DESC
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			studentID uint64
+			mark      uint16
+			date      time.Time
+		)
+		err := rows.Scan(
+			&studentID,
+			&mark,
+			&date,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			fmt.Sprintf("%d", studentID),
+			fmt.Sprintf("%d", mark),
+			date.Format("2006-01-02"),
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
