@@ -14,7 +14,7 @@ type specialRequestsRepository struct {
 	dbclient *pgx.Conn
 }
 
-func NewSpecialRepository(dbclient *pgx.Conn) repository.Special {
+func NewSpecialRequestsRepository(dbclient *pgx.Conn) repository.Special {
 	return &specialRequestsRepository{
 		dbclient: dbclient,
 	}

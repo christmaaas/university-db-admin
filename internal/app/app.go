@@ -29,7 +29,7 @@ func NewApp() App {
 	lsnRepo := postgres.NewLessonsRepository(pgClient)
 	posRepo := postgres.NewPositionsRepository(pgClient)
 	sbjRepo := postgres.NewSubjectsRepository(pgClient)
-	specRepo := postgres.NewSpecialRepository(pgClient)
+	specRepo := postgres.NewSpecialRequestsRepository(pgClient)
 	studRepo := postgres.NewStudentsRepository(pgClient)
 	marksRepo := postgres.NewMarksRepository(pgClient)
 	lsnTpsRepo := postgres.NewLessonTypesRepository(pgClient)
