@@ -126,5 +126,6 @@ type Special interface {
 	GetAllStudentsGroupsCombs(ctx context.Context) ([][]string, error)
 	GetAllStudentsWithCurators(ctx context.Context) ([][]string, error)
 	GetAllCuratorsWithStudents(ctx context.Context) ([][]string, error)
+	GetAllStudentsWithAllCurators(ctx context.Context) ([][]string, error)
 	IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error)
 }
