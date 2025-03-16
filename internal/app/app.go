@@ -21,35 +21,35 @@ func NewApp() App {
 	cfg := config.LoadConfig()
 
 	log.Println("initializing database")
-	pgClient := dbclient.NewClientPG(cfg.DB)
+	pg := dbclient.NewClientPG(cfg.DB)
 
 	log.Println("initializing repositories")
-	empRepo := postgres.NewEmployeesRepository(pgClient)
-	grpRepo := postgres.NewGroupsRepository(pgClient)
-	lsnRepo := postgres.NewLessonsRepository(pgClient)
-	posRepo := postgres.NewPositionsRepository(pgClient)
-	sbjRepo := postgres.NewSubjectsRepository(pgClient)
-	specRepo := postgres.NewSpecialRequestsRepository(pgClient)
-	studRepo := postgres.NewStudentsRepository(pgClient)
-	marksRepo := postgres.NewMarksRepository(pgClient)
-	lsnTpsRepo := postgres.NewLessonTypesRepository(pgClient)
-	empSbjRepo := postgres.NewEmployeesSubjectsRepository(pgClient)
+	employees := postgres.NewEmployeesRepository(pg)
+	groups := postgres.NewGroupsRepository(pg)
+	lessons := postgres.NewLessonsRepository(pg)
+	positions := postgres.NewPositionsRepository(pg)
+	subjects := postgres.NewSubjectsRepository(pg)
+	lessonTypes := postgres.NewLessonTypesRepository(pg)
+	marks := postgres.NewMarksRepository(pg)
+	students := postgres.NewStudentsRepository(pg)
+	employeesSubjects := postgres.NewEmployeesSubjectsRepository(pg)
+	special := postgres.NewSpecialRequestsRepository(pg)
 
 	log.Println("application initialized")
 
 	return App{
 		cfg: cfg,
 		repository: &repository.Repository{
-			Employees:         empRepo,
-			Groups:            grpRepo,
-			LessonTypes:       lsnTpsRepo,
-			Lessons:           lsnRepo,
-			Marks:             marksRepo,
-			Positions:         posRepo,
-			Students:          studRepo,
-			Subjects:          sbjRepo,
-			EmployeesSubjects: empSbjRepo,
-			Special:           specRepo,
+			Employees:         employees,
+			Groups:            groups,
+			Lessons:           lessons,
+			Positions:         positions,
+			Subjects:          subjects,
+			LessonTypes:       lessonTypes,
+			Marks:             marks,
+			Students:          students,
+			EmployeesSubjects: employeesSubjects,
+			Special:           special,
 		},
 	}
 }
