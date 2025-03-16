@@ -611,7 +611,7 @@ func (r *specialRequestsRepository) GetStudentsUppercaseWithLength(ctx context.C
 
 func (r *specialRequestsRepository) IsTeacher(ctx context.Context, id uint64) (bool, error) {
 	const teacherName = "Преподаватель"
-	query := `
+	sql := `
 		SELECT EXISTS (
 			SELECT 1 
 			FROM employees e
@@ -621,7 +621,7 @@ func (r *specialRequestsRepository) IsTeacher(ctx context.Context, id uint64) (b
 	`
 
 	var exists bool
-	err := r.db.QueryRow(ctx, query, id, teacherName).Scan(&exists)
+	err := r.db.QueryRow(ctx, sql, id, teacherName).Scan(&exists)
 	if err != nil {
 		return false, err
 	}
