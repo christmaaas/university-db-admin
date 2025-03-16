@@ -9,8 +9,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func NewClientPG(db_cfg config.DatabaseConfig) *pgx.Conn {
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", db_cfg.User, db_cfg.Password, db_cfg.Host, db_cfg.Port, db_cfg.Name)
+func NewClientPG(cfg config.DatabaseConfig) *pgx.Conn {
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
 
 	log.Printf("connecting to %s\n", dsn)
 	conn, err := pgx.Connect(context.Background(), dsn)
