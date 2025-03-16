@@ -2,6 +2,7 @@ package forms
 
 import (
 	"context"
+	"fmt"
 	"university-db-admin/internal/repository"
 	"university-db-admin/pkg/validation"
 
@@ -59,7 +60,14 @@ func showEmployeesForm(content *fyne.Container, r *repository.Repository) {
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			dto.Name,
+			dto.Passport,
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showEmployeeForm(content *fyne.Container, r *repository.Repository) {
@@ -91,8 +99,9 @@ func showEmployeeForm(content *fyne.Container, r *repository.Repository) {
 			return
 		}
 
+		rows := [][]string{{data.Name, data.Passport}}
 		content.Objects = content.Objects[:1]
-		content.Add(updateTable(headers, data))
+		content.Add(updateTable(headers, rows))
 		content.Refresh()
 	})
 
@@ -118,7 +127,15 @@ func showStudentsNoCuratorForm(content *fyne.Container, r *repository.Repository
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			dto.Name,
+			dto.Passport,
+			fmt.Sprintf("%d", dto.GroupID),
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showEmployeesByPositionsForm(content *fyne.Container, r *repository.Repository) {
@@ -151,8 +168,14 @@ func showEmployeesByPositionsForm(content *fyne.Container, r *repository.Reposit
 			return
 		}
 
+		rows := make([][]string, len(data))
+		for i, dto := range data {
+			rows[i] = []string{
+				dto.Name,
+			}
+		}
 		content.Objects = content.Objects[:1]
-		content.Add(updateTable(headers, data))
+		content.Add(updateTable(headers, rows))
 		content.Refresh()
 	})
 
@@ -200,8 +223,16 @@ func showMarksBySubjectForm(content *fyne.Container, r *repository.Repository) {
 			return
 		}
 
+		rows := make([][]string, len(data))
+		for i, dto := range data {
+			rows[i] = []string{
+				fmt.Sprintf("%d", dto.StudentID),
+				fmt.Sprintf("%d", dto.Mark),
+				dto.Date.Format("2006-01-02"),
+			}
+		}
 		content.Objects = content.Objects[:1]
-		content.Add(updateTable(headers, data))
+		content.Add(updateTable(headers, rows))
 		content.Refresh()
 	})
 
@@ -237,8 +268,15 @@ func showStudentsByMiddlenameForm(content *fyne.Container, r *repository.Reposit
 			return
 		}
 
+		rows := make([][]string, len(data))
+		for i, dto := range data {
+			rows[i] = []string{
+				dto.Name,
+				dto.Passport,
+			}
+		}
 		content.Objects = content.Objects[:1]
-		content.Add(updateTable(headers, data))
+		content.Add(updateTable(headers, rows))
 		content.Refresh()
 	})
 
@@ -260,7 +298,13 @@ func showSortedSubjectsForm(content *fyne.Container, r *repository.Repository) {
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			dto.Name,
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showSortedMarksForm(content *fyne.Container, r *repository.Repository) {
@@ -276,7 +320,15 @@ func showSortedMarksForm(content *fyne.Container, r *repository.Repository) {
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			fmt.Sprintf("%d", dto.StudentID),
+			fmt.Sprintf("%d", dto.Mark),
+			dto.Date.Format("2006-01-02"),
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showStudentGroupCombsForm(content *fyne.Container, r *repository.Repository) {
@@ -291,7 +343,14 @@ func showStudentGroupCombsForm(content *fyne.Container, r *repository.Repository
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			dto.StudentName,
+			fmt.Sprintf("%d", dto.GroupNumber),
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showLessonsScheduleForm(content *fyne.Container, r *repository.Repository) {
@@ -310,7 +369,18 @@ func showLessonsScheduleForm(content *fyne.Container, r *repository.Repository) 
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			fmt.Sprintf("%d", dto.GroupNumber),
+			dto.Subject,
+			dto.LessonType,
+			fmt.Sprintf("%d", dto.Room),
+			fmt.Sprintf("%d", dto.Week),
+			fmt.Sprintf("%d", dto.Weekday),
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showStudentsWithCuratorsForm(content *fyne.Container, r *repository.Repository) {
@@ -327,7 +397,16 @@ func showStudentsWithCuratorsForm(content *fyne.Container, r *repository.Reposit
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			dto.StudentName,
+			dto.StudentPassport,
+			dto.CuratorName,
+			dto.CuratorPassport,
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showCuratorsWithStudentsForm(content *fyne.Container, r *repository.Repository) {
@@ -344,7 +423,16 @@ func showCuratorsWithStudentsForm(content *fyne.Container, r *repository.Reposit
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			dto.StudentName,
+			dto.StudentPassport,
+			dto.CuratorName,
+			dto.CuratorPassport,
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showAllStudentCuratorPairsForm(content *fyne.Container, r *repository.Repository) {
@@ -361,7 +449,16 @@ func showAllStudentCuratorPairsForm(content *fyne.Container, r *repository.Repos
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			dto.StudentName,
+			dto.StudentPassport,
+			dto.CuratorName,
+			dto.CuratorPassport,
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }
 
 func showStudentsUppercaseWithLengthForm(content *fyne.Container, r *repository.Repository) {
@@ -377,5 +474,13 @@ func showStudentsUppercaseWithLengthForm(content *fyne.Container, r *repository.
 		return
 	}
 
-	content.Add(updateTable(headers, data))
+	rows := make([][]string, len(data))
+	for i, dto := range data {
+		rows[i] = []string{
+			fmt.Sprintf("%d", dto.ID),
+			dto.UppercaseName,
+			fmt.Sprintf("%d", dto.NameLength),
+		}
+	}
+	content.Add(updateTable(headers, rows))
 }

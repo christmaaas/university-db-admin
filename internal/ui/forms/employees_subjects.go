@@ -53,8 +53,8 @@ func showAddEmployeesSubjectsForm(content *fyne.Container, r *repository.Reposit
 			return
 		}
 
-		isT, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
-		if !isT {
+		res, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
+		if !res.IsTeacher {
 			if err != nil {
 				showResult(content, err, "")
 			} else {
@@ -158,8 +158,8 @@ func showUpdateEmployeesSubjectsForm(content *fyne.Container, r *repository.Repo
 			return
 		}
 
-		isT, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
-		if !isT {
+		res, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
+		if !res.IsTeacher {
 			if err != nil {
 				showResult(content, err, "")
 			} else {

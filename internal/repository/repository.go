@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"university-db-admin/internal/domain"
+	"university-db-admin/internal/dto"
 )
 
 type Repository struct {
@@ -114,19 +115,19 @@ type EmployeesSubjects interface {
 }
 
 type Special interface {
-	GetAllEmployees(ctx context.Context) ([][]string, error)
-	GetEmployeeByID(ctx context.Context, id uint64) ([][]string, error)
-	GetStudentsNoCurator(ctx context.Context) ([][]string, error)
-	GetLessonsSchedule(ctx context.Context) ([][]string, error)
-	GetEmployeesByPositions(ctx context.Context, firstID, secondID uint64) ([][]string, error)
-	GetMarksBySubject(ctx context.Context, id uint64, m uint16) ([][]string, error)
-	GetStudentsByMiddlename(ctx context.Context, m string) ([][]string, error)
-	GetSortedSubjects(ctx context.Context) ([][]string, error)
-	GetSortedMarks(ctx context.Context) ([][]string, error)
-	GetStudentGroupCombs(ctx context.Context) ([][]string, error)
-	GetStudentsWithCurators(ctx context.Context) ([][]string, error)
-	GetCuratorsWithStudents(ctx context.Context) ([][]string, error)
-	GetAllStudentCuratorPairs(ctx context.Context) ([][]string, error)
-	GetStudentsUppercaseWithLength(ctx context.Context) ([][]string, error)
-	IsTeacher(ctx context.Context, id uint64) (bool, error)
+	GetAllEmployees(ctx context.Context) ([]dto.EmployeeDTO, error)
+	GetEmployeeByID(ctx context.Context, id uint64) (dto.EmployeeDTO, error)
+	GetStudentsNoCurator(ctx context.Context) ([]dto.StudentNoCuratorDTO, error)
+	GetLessonsSchedule(ctx context.Context) ([]dto.LessonScheduleDTO, error)
+	GetEmployeesByPositions(ctx context.Context, firstID, secondID uint64) ([]dto.EmployeePositionDTO, error)
+	GetMarksBySubject(ctx context.Context, id uint64, m uint16) ([]dto.MarkBySubjectDTO, error)
+	GetStudentsByMiddlename(ctx context.Context, m string) ([]dto.StudentByNameDTO, error)
+	GetSortedSubjects(ctx context.Context) ([]dto.SortedSubjectDTO, error)
+	GetSortedMarks(ctx context.Context) ([]dto.SortedMarkDTO, error)
+	GetStudentGroupCombs(ctx context.Context) ([]dto.StudentGroupCombDTO, error)
+	GetStudentsWithCurators(ctx context.Context) ([]dto.StudentCuratorDTO, error)
+	GetCuratorsWithStudents(ctx context.Context) ([]dto.StudentCuratorDTO, error)
+	GetAllStudentCuratorPairs(ctx context.Context) ([]dto.StudentCuratorDTO, error)
+	GetStudentsUppercaseWithLength(ctx context.Context) ([]dto.StudentNameStatDTO, error)
+	IsTeacher(ctx context.Context, id uint64) (dto.EmployeeRoleDTO, error)
 }
