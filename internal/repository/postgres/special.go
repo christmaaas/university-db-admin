@@ -20,27 +20,128 @@ func NewSpecialRequestsRepository(dbclient *pgx.Conn) repository.Special {
 	}
 }
 
-func (r *specialRequestsRepository) IsEmployeeTeacher(ctx context.Context, id uint64) (bool, error) {
-	const teacherName = "Преподаватель"
-	query := `
-		SELECT EXISTS (
-			SELECT 1 
-			FROM employees e
-			INNER JOIN positions p ON e.position_id = p.id
-			WHERE e.id = $1 AND p.name = $2
-		)
+func (r *specialRequestsRepository) GetAllEmployees(ctx context.Context) ([][]string, error) {
+	sql := `
+		SELECT employees.name, employees.passport
+		FROM public.employees
 	`
 
-	var exists bool
-	err := r.dbclient.QueryRow(ctx, query, id, teacherName).Scan(&exists)
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql)
 	if err != nil {
-		return false, err
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			name     string
+			passport string
+		)
+		err := rows.Scan(
+			&name,
+			&passport,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			name,
+			passport,
+		})
 	}
 
-	return exists, nil
+	log.Println("sql result:", result)
+	return result, nil
 }
 
-func (r *specialRequestsRepository) GetScheduleByGroups(ctx context.Context) ([][]string, error) {
+func (r *specialRequestsRepository) GetEmployeeByID(ctx context.Context, id uint64) ([][]string, error) {
+	sql := `
+		SELECT employees.name, employees.passport
+		FROM public.employees
+		WHERE employees.id = $1
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql, id)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			name     string
+			passport string
+		)
+		err := rows.Scan(
+			&name,
+			&passport,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			name,
+			passport,
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
+func (r *specialRequestsRepository) GetStudentsNoCurator(ctx context.Context) ([][]string, error) {
+	sql := `
+		SELECT students.name, 
+			students.passport,
+			students.group_id
+		FROM public.students
+		WHERE NOT students.employee_id IS NOT NULL
+	`
+
+	var result [][]string
+	log.Println("executing sql:", sql)
+
+	rows, err := r.dbclient.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			name     string
+			passport string
+			groupID  uint64
+		)
+		err := rows.Scan(
+			&name,
+			&passport,
+			&groupID,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+
+		result = append(result, []string{
+			name,
+			passport,
+			fmt.Sprintf("%d", groupID),
+		})
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
+func (r *specialRequestsRepository) GetLessonsSchedule(ctx context.Context) ([][]string, error) {
 	sql := `
 		SELECT groups.number,
 			subjects.name,
@@ -98,128 +199,7 @@ func (r *specialRequestsRepository) GetScheduleByGroups(ctx context.Context) ([]
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetAllEmployeesInfo(ctx context.Context) ([][]string, error) {
-	sql := `
-		SELECT employees.name, employees.passport
-		FROM public.employees
-	`
-
-	var result [][]string
-	log.Println("executing sql:", sql)
-
-	rows, err := r.dbclient.Query(ctx, sql)
-	if err != nil {
-		return nil, handlePgError(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var (
-			name     string
-			passport string
-		)
-		err := rows.Scan(
-			&name,
-			&passport,
-		)
-		if err != nil {
-			return nil, handlePgError(err)
-		}
-
-		result = append(result, []string{
-			name,
-			passport,
-		})
-	}
-
-	log.Println("sql result:", result)
-	return result, nil
-}
-
-func (r *specialRequestsRepository) GetAllEmployeesInfoByID(ctx context.Context, id uint64) ([][]string, error) {
-	sql := `
-		SELECT employees.name, employees.passport
-		FROM public.employees
-		WHERE employees.id = $1
-	`
-
-	var result [][]string
-	log.Println("executing sql:", sql)
-
-	rows, err := r.dbclient.Query(ctx, sql, id)
-	if err != nil {
-		return nil, handlePgError(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var (
-			name     string
-			passport string
-		)
-		err := rows.Scan(
-			&name,
-			&passport,
-		)
-		if err != nil {
-			return nil, handlePgError(err)
-		}
-
-		result = append(result, []string{
-			name,
-			passport,
-		})
-	}
-
-	log.Println("sql result:", result)
-	return result, nil
-}
-
-func (r *specialRequestsRepository) GetStudentsNoCuratorInfo(ctx context.Context) ([][]string, error) {
-	sql := `
-		SELECT students.name, 
-			students.passport,
-			students.group_id
-		FROM public.students
-		WHERE NOT students.employee_id IS NOT NULL
-	`
-
-	var result [][]string
-	log.Println("executing sql:", sql)
-
-	rows, err := r.dbclient.Query(ctx, sql)
-	if err != nil {
-		return nil, handlePgError(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var (
-			name     string
-			passport string
-			groupID  uint64
-		)
-		err := rows.Scan(
-			&name,
-			&passport,
-			&groupID,
-		)
-		if err != nil {
-			return nil, handlePgError(err)
-		}
-
-		result = append(result, []string{
-			name,
-			passport,
-			fmt.Sprintf("%d", groupID),
-		})
-	}
-
-	log.Println("sql result:", result)
-	return result, nil
-}
-
-func (r *specialRequestsRepository) GetEmployeesInfoByPositionsID(ctx context.Context, firstID, secondID uint64) ([][]string, error) {
+func (r *specialRequestsRepository) GetEmployeesByPositions(ctx context.Context, firstID, secondID uint64) ([][]string, error) {
 	sql := `
 		SELECT employees.name
 		FROM public.employees
@@ -249,7 +229,7 @@ func (r *specialRequestsRepository) GetEmployeesInfoByPositionsID(ctx context.Co
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetMarksInfoBySubjectID(ctx context.Context, id uint64, m uint16) ([][]string, error) {
+func (r *specialRequestsRepository) GetMarksBySubject(ctx context.Context, id uint64, m uint16) ([][]string, error) {
 	sql := `
 		SELECT marks.student_id, marks.mark, marks.date
 		FROM public.marks
@@ -291,7 +271,7 @@ func (r *specialRequestsRepository) GetMarksInfoBySubjectID(ctx context.Context,
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetStudentsInfoByMiddlename(ctx context.Context, m string) ([][]string, error) {
+func (r *specialRequestsRepository) GetStudentsByMiddlename(ctx context.Context, m string) ([][]string, error) {
 	sql := `
 		SELECT students.name, students.passport
 		FROM public.students
@@ -331,7 +311,7 @@ func (r *specialRequestsRepository) GetStudentsInfoByMiddlename(ctx context.Cont
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetSortedSubjectsInfo(ctx context.Context) ([][]string, error) {
+func (r *specialRequestsRepository) GetSortedSubjects(ctx context.Context) ([][]string, error) {
 	sql := `
 		SELECT subjects.name
 		FROM public.subjects
@@ -361,7 +341,7 @@ func (r *specialRequestsRepository) GetSortedSubjectsInfo(ctx context.Context) (
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetSortedMarksInfo(ctx context.Context) ([][]string, error) {
+func (r *specialRequestsRepository) GetSortedMarks(ctx context.Context) ([][]string, error) {
 	sql := `
 		SELECT marks.student_id, marks.mark, marks.date
 		FROM public.marks
@@ -403,7 +383,7 @@ func (r *specialRequestsRepository) GetSortedMarksInfo(ctx context.Context) ([][
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetAllStudentsGroupsCombs(ctx context.Context) ([][]string, error) {
+func (r *specialRequestsRepository) GetStudentGroupCombs(ctx context.Context) ([][]string, error) {
 	sql := `
 		SELECT students.name, groups.number
 		FROM public.students
@@ -442,7 +422,7 @@ func (r *specialRequestsRepository) GetAllStudentsGroupsCombs(ctx context.Contex
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetAllStudentsWithCurators(ctx context.Context) ([][]string, error) {
+func (r *specialRequestsRepository) GetStudentsWithCurators(ctx context.Context) ([][]string, error) {
 	sql := `
 		SELECT students.name,
 			students.passport,
@@ -490,7 +470,7 @@ func (r *specialRequestsRepository) GetAllStudentsWithCurators(ctx context.Conte
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetAllCuratorsWithStudents(ctx context.Context) ([][]string, error) {
+func (r *specialRequestsRepository) GetCuratorsWithStudents(ctx context.Context) ([][]string, error) {
 	sql := `
 		SELECT students.name,
 			students.passport,
@@ -538,7 +518,7 @@ func (r *specialRequestsRepository) GetAllCuratorsWithStudents(ctx context.Conte
 	return result, nil
 }
 
-func (r *specialRequestsRepository) GetAllStudentsWithAllCurators(ctx context.Context) ([][]string, error) {
+func (r *specialRequestsRepository) GetAllStudentCuratorPairs(ctx context.Context) ([][]string, error) {
 	sql := `
 		SELECT students.name,
 			students.passport,
@@ -627,4 +607,24 @@ func (r *specialRequestsRepository) GetStudentsUppercaseWithLength(ctx context.C
 
 	log.Println("sql result:", result)
 	return result, nil
+}
+
+func (r *specialRequestsRepository) IsTeacher(ctx context.Context, id uint64) (bool, error) {
+	const teacherName = "Преподаватель"
+	query := `
+		SELECT EXISTS (
+			SELECT 1 
+			FROM employees e
+			INNER JOIN positions p ON e.position_id = p.id
+			WHERE e.id = $1 AND p.name = $2
+		)
+	`
+
+	var exists bool
+	err := r.dbclient.QueryRow(ctx, query, id, teacherName).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }

@@ -71,7 +71,7 @@ func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 			return
 		}
 
-		isT, err := r.Special.IsEmployeeTeacher(context.Background(), parseUint64(employeeEntry.Text))
+		isT, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
 		if !isT {
 			if err != nil {
 				showResult(content, err, "")
@@ -178,7 +178,7 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 			return
 		}
 
-		isT, err := r.Special.IsEmployeeTeacher(context.Background(), parseUint64(employeeEntry.Text))
+		isT, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
 		if !isT {
 			if err != nil {
 				showResult(content, err, "")
