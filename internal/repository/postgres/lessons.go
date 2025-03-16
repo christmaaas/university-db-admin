@@ -10,12 +10,12 @@ import (
 )
 
 type lessonsRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewLessonsRepository(dbclient *pgx.Conn) repository.Lessons {
+func NewLessonsRepository(db *pgx.Conn) repository.Lessons {
 	return &lessonsRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -27,7 +27,7 @@ func (l *lessonsRepository) Create(ctx context.Context, lsn domain.Lesson) error
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql,
+	err := l.db.QueryRow(ctx, sql,
 		lsn.GroupID,
 		lsn.SubjectID,
 		lsn.LessonTypeID,
@@ -52,7 +52,7 @@ func (l *lessonsRepository) FindOne(ctx context.Context, id uint64) (domain.Less
 
 	var lsn domain.Lesson
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, id).Scan(
+	err := l.db.QueryRow(ctx, sql, id).Scan(
 		&lsn.ID,
 		&lsn.GroupID,
 		&lsn.SubjectID,
@@ -78,7 +78,7 @@ func (l *lessonsRepository) FindAll(ctx context.Context) ([]domain.Lesson, error
 	var lessons []domain.Lesson
 	log.Println("executing sql:", sql)
 
-	rows, err := l.dbclient.Query(ctx, sql)
+	rows, err := l.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -115,7 +115,7 @@ func (l *lessonsRepository) findByField(ctx context.Context, field string, value
 	var lessons []domain.Lesson
 	log.Println("executing sql:", sql)
 
-	rows, err := l.dbclient.Query(ctx, sql, value)
+	rows, err := l.db.Query(ctx, sql, value)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -175,7 +175,7 @@ func (l *lessonsRepository) Update(ctx context.Context, id uint64, lsn domain.Le
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql,
+	err := l.db.QueryRow(ctx, sql,
 		lsn.GroupID,
 		lsn.SubjectID,
 		lsn.LessonTypeID,
@@ -200,7 +200,7 @@ func (l *lessonsRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := l.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}

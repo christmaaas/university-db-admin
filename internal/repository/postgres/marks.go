@@ -11,12 +11,12 @@ import (
 )
 
 type marksRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewMarksRepository(dbclient *pgx.Conn) repository.Marks {
+func NewMarksRepository(db *pgx.Conn) repository.Marks {
 	return &marksRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -28,7 +28,7 @@ func (m *marksRepository) Create(ctx context.Context, mark domain.Mark) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := m.dbclient.QueryRow(ctx, sql,
+	err := m.db.QueryRow(ctx, sql,
 		mark.EmployeeID,
 		mark.StudentID,
 		mark.SubjectID,
@@ -56,7 +56,7 @@ func (m *marksRepository) FindOne(ctx context.Context, id uint64) (domain.Mark, 
 	)
 
 	log.Println("executing sql:", sql)
-	err := m.dbclient.QueryRow(ctx, sql, id).Scan(
+	err := m.db.QueryRow(ctx, sql, id).Scan(
 		&mark.ID,
 		&mark.EmployeeID,
 		&mark.StudentID,
@@ -82,7 +82,7 @@ func (m *marksRepository) FindAll(ctx context.Context) ([]domain.Mark, error) {
 	var marks []domain.Mark
 	log.Println("executing sql:", sql)
 
-	rows, err := m.dbclient.Query(ctx, sql)
+	rows, err := m.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -123,7 +123,7 @@ func (m *marksRepository) findByField(ctx context.Context, field string, value i
 	var marks []domain.Mark
 	log.Println("executing sql:", sql)
 
-	rows, err := m.dbclient.Query(ctx, sql, value)
+	rows, err := m.db.Query(ctx, sql, value)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -183,7 +183,7 @@ func (m *marksRepository) Update(ctx context.Context, id uint64, mark domain.Mar
 	`
 
 	log.Println("executing sql:", sql)
-	err := m.dbclient.QueryRow(ctx, sql,
+	err := m.db.QueryRow(ctx, sql,
 		mark.EmployeeID,
 		mark.StudentID,
 		mark.SubjectID,
@@ -207,7 +207,7 @@ func (m *marksRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := m.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := m.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}

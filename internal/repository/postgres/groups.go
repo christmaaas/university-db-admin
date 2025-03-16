@@ -10,12 +10,12 @@ import (
 )
 
 type groupsRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewGroupsRepository(dbclient *pgx.Conn) repository.Groups {
+func NewGroupsRepository(db *pgx.Conn) repository.Groups {
 	return &groupsRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -27,7 +27,7 @@ func (g *groupsRepository) Create(ctx context.Context, grp domain.Group) error {
 	`
 
 	log.Println("executing sql: ", sql)
-	err := g.dbclient.QueryRow(ctx, sql, grp.Number).Scan(&grp.ID)
+	err := g.db.QueryRow(ctx, sql, grp.Number).Scan(&grp.ID)
 	if err != nil {
 		return handlePgError(err)
 	}
@@ -46,7 +46,7 @@ func (g *groupsRepository) FindOne(ctx context.Context, id uint64) (domain.Group
 	var grp domain.Group
 
 	log.Println("executing sql: ", sql)
-	err := g.dbclient.QueryRow(ctx, sql, id).Scan(&grp.ID, &grp.Number)
+	err := g.db.QueryRow(ctx, sql, id).Scan(&grp.ID, &grp.Number)
 	if err != nil {
 		return domain.Group{}, handlePgError(err)
 	}
@@ -64,7 +64,7 @@ func (g *groupsRepository) FindAll(ctx context.Context) ([]domain.Group, error) 
 	var groups []domain.Group
 	log.Println("executing sql: ", sql)
 
-	rows, err := g.dbclient.Query(ctx, sql)
+	rows, err := g.db.Query(ctx, sql)
 	if err != nil {
 		return groups, err
 	}
@@ -93,7 +93,7 @@ func (g *groupsRepository) FindByNumber(ctx context.Context, num uint64) (domain
 	var grp domain.Group
 
 	log.Println("executing sql: ", sql)
-	err := g.dbclient.QueryRow(ctx, sql, num).Scan(&grp.ID, &grp.Number)
+	err := g.db.QueryRow(ctx, sql, num).Scan(&grp.ID, &grp.Number)
 	if err != nil {
 		return domain.Group{}, handlePgError(err)
 	}
@@ -111,7 +111,7 @@ func (g *groupsRepository) Update(ctx context.Context, id uint64, grp domain.Gro
 	`
 
 	log.Println("executing sql: ", sql)
-	err := g.dbclient.QueryRow(ctx, sql, grp.Number, id).Scan(&id)
+	err := g.db.QueryRow(ctx, sql, grp.Number, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}
@@ -128,7 +128,7 @@ func (g *groupsRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql: ", sql)
-	err := g.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := g.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}

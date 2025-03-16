@@ -11,12 +11,12 @@ import (
 )
 
 type specialRequestsRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewSpecialRequestsRepository(dbclient *pgx.Conn) repository.Special {
+func NewSpecialRequestsRepository(db *pgx.Conn) repository.Special {
 	return &specialRequestsRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -29,7 +29,7 @@ func (r *specialRequestsRepository) GetAllEmployees(ctx context.Context) ([][]st
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -68,7 +68,7 @@ func (r *specialRequestsRepository) GetEmployeeByID(ctx context.Context, id uint
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql, id)
+	rows, err := r.db.Query(ctx, sql, id)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -109,7 +109,7 @@ func (r *specialRequestsRepository) GetStudentsNoCurator(ctx context.Context) ([
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -158,7 +158,7 @@ func (r *specialRequestsRepository) GetLessonsSchedule(ctx context.Context) ([][
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -209,7 +209,7 @@ func (r *specialRequestsRepository) GetEmployeesByPositions(ctx context.Context,
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql, firstID, secondID)
+	rows, err := r.db.Query(ctx, sql, firstID, secondID)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -239,7 +239,7 @@ func (r *specialRequestsRepository) GetMarksBySubject(ctx context.Context, id ui
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql, id, m)
+	rows, err := r.db.Query(ctx, sql, id, m)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -282,7 +282,7 @@ func (r *specialRequestsRepository) GetStudentsByMiddlename(ctx context.Context,
 	log.Println("executing sql:", sql)
 
 	pattern := "%" + m
-	rows, err := r.dbclient.Query(ctx, sql, pattern)
+	rows, err := r.db.Query(ctx, sql, pattern)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -321,7 +321,7 @@ func (r *specialRequestsRepository) GetSortedSubjects(ctx context.Context) ([][]
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -351,7 +351,7 @@ func (r *specialRequestsRepository) GetSortedMarks(ctx context.Context) ([][]str
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -393,7 +393,7 @@ func (r *specialRequestsRepository) GetStudentGroupCombs(ctx context.Context) ([
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -435,7 +435,7 @@ func (r *specialRequestsRepository) GetStudentsWithCurators(ctx context.Context)
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -483,7 +483,7 @@ func (r *specialRequestsRepository) GetCuratorsWithStudents(ctx context.Context)
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -531,7 +531,7 @@ func (r *specialRequestsRepository) GetAllStudentCuratorPairs(ctx context.Contex
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -577,7 +577,7 @@ func (r *specialRequestsRepository) GetStudentsUppercaseWithLength(ctx context.C
 	var result [][]string
 	log.Println("executing sql:", sql)
 
-	rows, err := r.dbclient.Query(ctx, sql)
+	rows, err := r.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -621,7 +621,7 @@ func (r *specialRequestsRepository) IsTeacher(ctx context.Context, id uint64) (b
 	`
 
 	var exists bool
-	err := r.dbclient.QueryRow(ctx, query, id, teacherName).Scan(&exists)
+	err := r.db.QueryRow(ctx, query, id, teacherName).Scan(&exists)
 	if err != nil {
 		return false, err
 	}

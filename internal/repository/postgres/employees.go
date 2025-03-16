@@ -10,12 +10,12 @@ import (
 )
 
 type employeesRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewEmployeesRepository(dbclient *pgx.Conn) repository.Employees {
+func NewEmployeesRepository(db *pgx.Conn) repository.Employees {
 	return &employeesRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -27,7 +27,7 @@ func (e *employeesRepository) Create(ctx context.Context, emp domain.Employee) e
 	`
 
 	log.Println("executing sql:", sql)
-	err := e.dbclient.QueryRow(ctx, sql,
+	err := e.db.QueryRow(ctx, sql,
 		emp.Name,
 		emp.Passport,
 		emp.PositionID,
@@ -49,7 +49,7 @@ func (e *employeesRepository) FindOne(ctx context.Context, id uint64) (domain.Em
 
 	var emp domain.Employee
 	log.Println("executing sql:", sql)
-	err := e.dbclient.QueryRow(ctx, sql, id).Scan(
+	err := e.db.QueryRow(ctx, sql, id).Scan(
 		&emp.ID,
 		&emp.Name,
 		&emp.Passport,
@@ -72,7 +72,7 @@ func (e *employeesRepository) FindAll(ctx context.Context) ([]domain.Employee, e
 	var emps []domain.Employee
 	log.Println("executing sql:", sql)
 
-	rows, err := e.dbclient.Query(ctx, sql)
+	rows, err := e.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -106,7 +106,7 @@ func (e *employeesRepository) FindByName(ctx context.Context, name string) ([]do
 	var emps []domain.Employee
 	log.Println("executing sql:", sql)
 
-	rows, err := e.dbclient.Query(ctx, sql, name)
+	rows, err := e.db.Query(ctx, sql, name)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -139,7 +139,7 @@ func (e *employeesRepository) FindByPassport(ctx context.Context, passport strin
 
 	var emp domain.Employee
 	log.Println("executing sql:", sql)
-	err := e.dbclient.QueryRow(ctx, sql, passport).Scan(
+	err := e.db.QueryRow(ctx, sql, passport).Scan(
 		&emp.ID,
 		&emp.Name,
 		&emp.Passport,
@@ -163,7 +163,7 @@ func (e *employeesRepository) FindByPosition(ctx context.Context, position uint6
 	var emps []domain.Employee
 	log.Println("executing sql:", sql)
 
-	rows, err := e.dbclient.Query(ctx, sql, position)
+	rows, err := e.db.Query(ctx, sql, position)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -196,7 +196,7 @@ func (e *employeesRepository) Update(ctx context.Context, id uint64, emp domain.
 	`
 
 	log.Println("executing sql:", sql)
-	err := e.dbclient.QueryRow(ctx, sql,
+	err := e.db.QueryRow(ctx, sql,
 		emp.Name,
 		emp.Passport,
 		emp.PositionID,
@@ -218,7 +218,7 @@ func (e *employeesRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := e.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := e.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}

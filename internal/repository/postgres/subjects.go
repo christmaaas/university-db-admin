@@ -10,12 +10,12 @@ import (
 )
 
 type subjectsRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewSubjectsRepository(dbclient *pgx.Conn) repository.Subjects {
+func NewSubjectsRepository(db *pgx.Conn) repository.Subjects {
 	return &subjectsRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -27,7 +27,7 @@ func (s *subjectsRepository) Create(ctx context.Context, sbj domain.Subject) err
 	`
 
 	log.Println("executing sql:", sql)
-	err := s.dbclient.QueryRow(ctx, sql, sbj.Name, sbj.Description).Scan(&sbj.ID)
+	err := s.db.QueryRow(ctx, sql, sbj.Name, sbj.Description).Scan(&sbj.ID)
 	if err != nil {
 		return handlePgError(err)
 	}
@@ -45,7 +45,7 @@ func (s *subjectsRepository) FindOne(ctx context.Context, id uint64) (domain.Sub
 
 	var sbj domain.Subject
 	log.Println("executing sql:", sql)
-	err := s.dbclient.QueryRow(ctx, sql, id).Scan(&sbj.ID, &sbj.Name, &sbj.Description)
+	err := s.db.QueryRow(ctx, sql, id).Scan(&sbj.ID, &sbj.Name, &sbj.Description)
 	if err != nil {
 		return domain.Subject{}, handlePgError(err)
 	}
@@ -63,7 +63,7 @@ func (s *subjectsRepository) FindAll(ctx context.Context) ([]domain.Subject, err
 	var subjects []domain.Subject
 	log.Println("executing sql:", sql)
 
-	rows, err := s.dbclient.Query(ctx, sql)
+	rows, err := s.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -92,7 +92,7 @@ func (s *subjectsRepository) FindByName(ctx context.Context, name string) (domai
 	var sbj domain.Subject
 	log.Println("executing sql:", sql)
 
-	err := s.dbclient.QueryRow(ctx, sql, name).Scan(&sbj.ID, &sbj.Name, &sbj.Description)
+	err := s.db.QueryRow(ctx, sql, name).Scan(&sbj.ID, &sbj.Name, &sbj.Description)
 	if err != nil {
 		return domain.Subject{}, handlePgError(err)
 	}
@@ -110,7 +110,7 @@ func (s *subjectsRepository) Update(ctx context.Context, id uint64, sbj domain.S
 	`
 
 	log.Println("executing sql:", sql)
-	err := s.dbclient.QueryRow(ctx, sql, sbj.Name, sbj.Description, id).Scan(&id)
+	err := s.db.QueryRow(ctx, sql, sbj.Name, sbj.Description, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}
@@ -127,7 +127,7 @@ func (s *subjectsRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := s.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := s.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}

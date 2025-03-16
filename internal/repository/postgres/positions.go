@@ -10,12 +10,12 @@ import (
 )
 
 type positionsRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewPositionsRepository(dbclient *pgx.Conn) repository.Positions {
+func NewPositionsRepository(db *pgx.Conn) repository.Positions {
 	return &positionsRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -27,7 +27,7 @@ func (p *positionsRepository) Create(ctx context.Context, pos domain.Position) e
 	`
 
 	log.Println("executing sql:", sql)
-	err := p.dbclient.QueryRow(ctx, sql, pos.Name).Scan(&pos.ID)
+	err := p.db.QueryRow(ctx, sql, pos.Name).Scan(&pos.ID)
 	if err != nil {
 		return handlePgError(err)
 	}
@@ -45,7 +45,7 @@ func (p *positionsRepository) FindOne(ctx context.Context, id uint64) (domain.Po
 
 	var pos domain.Position
 	log.Println("executing sql:", sql)
-	err := p.dbclient.QueryRow(ctx, sql, id).Scan(&pos.ID, &pos.Name)
+	err := p.db.QueryRow(ctx, sql, id).Scan(&pos.ID, &pos.Name)
 	if err != nil {
 		return domain.Position{}, handlePgError(err)
 	}
@@ -63,7 +63,7 @@ func (p *positionsRepository) FindAll(ctx context.Context) ([]domain.Position, e
 	var positions []domain.Position
 	log.Println("executing sql:", sql)
 
-	rows, err := p.dbclient.Query(ctx, sql)
+	rows, err := p.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -92,7 +92,7 @@ func (p *positionsRepository) FindByName(ctx context.Context, name string) (doma
 	var pos domain.Position
 
 	log.Println("executing sql:", sql)
-	err := p.dbclient.QueryRow(ctx, sql, name).Scan(&pos.ID, &pos.Name)
+	err := p.db.QueryRow(ctx, sql, name).Scan(&pos.ID, &pos.Name)
 	if err != nil {
 		return domain.Position{}, handlePgError(err)
 	}
@@ -110,7 +110,7 @@ func (p *positionsRepository) Update(ctx context.Context, id uint64, pos domain.
 	`
 
 	log.Println("executing sql:", sql)
-	err := p.dbclient.QueryRow(ctx, sql, pos.Name, id).Scan(&id)
+	err := p.db.QueryRow(ctx, sql, pos.Name, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}
@@ -127,7 +127,7 @@ func (p *positionsRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := p.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := p.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}
