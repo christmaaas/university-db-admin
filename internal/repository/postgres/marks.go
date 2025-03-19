@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"log"
-	"time"
 	"university-db-admin/internal/domain"
 	"university-db-admin/internal/repository"
 
@@ -50,10 +49,7 @@ func (m *marksRepository) FindOne(ctx context.Context, id uint64) (domain.Mark, 
         WHERE id = $1
     `
 
-	var (
-		mark domain.Mark
-		date time.Time
-	)
+	var mark domain.Mark
 
 	log.Println("executing sql:", sql)
 	err := m.db.QueryRow(ctx, sql, id).Scan(
@@ -62,14 +58,13 @@ func (m *marksRepository) FindOne(ctx context.Context, id uint64) (domain.Mark, 
 		&mark.StudentID,
 		&mark.SubjectID,
 		&mark.Mark,
-		&date,
+		&mark.Date,
 	)
 	if err != nil {
 		return domain.Mark{}, handlePgError(err)
 	}
 
 	log.Println("sql result:", mark)
-	mark.Date = date.Format("2006-01-02")
 	return mark, nil
 }
 
@@ -89,23 +84,19 @@ func (m *marksRepository) FindAll(ctx context.Context) ([]domain.Mark, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var (
-			mark domain.Mark
-			date time.Time
-		)
+		var mark domain.Mark
 		err := rows.Scan(
 			&mark.ID,
 			&mark.EmployeeID,
 			&mark.StudentID,
 			&mark.SubjectID,
 			&mark.Mark,
-			&date,
+			&mark.Date,
 		)
 		if err != nil {
 			return nil, handlePgError(err)
 		}
 
-		mark.Date = date.Format("2006-01-02")
 		marks = append(marks, mark)
 	}
 
@@ -130,23 +121,19 @@ func (m *marksRepository) findByField(ctx context.Context, field string, value i
 	defer rows.Close()
 
 	for rows.Next() {
-		var (
-			mark domain.Mark
-			date time.Time
-		)
+		var mark domain.Mark
 		err := rows.Scan(
 			&mark.ID,
 			&mark.EmployeeID,
 			&mark.StudentID,
 			&mark.SubjectID,
 			&mark.Mark,
-			&date,
+			&mark.Date,
 		)
 		if err != nil {
 			return nil, handlePgError(err)
 		}
 
-		mark.Date = date.Format("2006-01-02")
 		marks = append(marks, mark)
 	}
 

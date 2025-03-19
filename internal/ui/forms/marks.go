@@ -63,7 +63,7 @@ func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 			StudentID:  parseUint64(studentEntry.Text),
 			SubjectID:  parseUint64(subjectEntry.Text),
 			Mark:       parseUint16(markEntry.Text),
-			Date:       dateEntry.Text,
+			Date:       parseDate(dateEntry.Text),
 		}
 
 		if err = validation.ValidateStruct(mark); err != nil {
@@ -170,7 +170,7 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 			StudentID:  parseUint64(studentEntry.Text),
 			SubjectID:  parseUint64(subjectEntry.Text),
 			Mark:       parseUint16(markEntry.Text),
-			Date:       dateEntry.Text,
+			Date:       parseDate(dateEntry.Text),
 		}
 
 		if err = validation.ValidateStruct(mark); err != nil {
@@ -293,7 +293,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 				fmt.Sprintf("%d", m.StudentID),
 				fmt.Sprintf("%d", m.SubjectID),
 				fmt.Sprintf("%d", m.Mark),
-				m.Date,
+				m.Date.Format(dateLayout),
 			})
 		}
 
@@ -310,7 +310,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 			fmt.Sprintf("%d", m.StudentID),
 			fmt.Sprintf("%d", m.SubjectID),
 			fmt.Sprintf("%d", m.Mark),
-			m.Date,
+			m.Date.Format(dateLayout),
 		})
 	}
 

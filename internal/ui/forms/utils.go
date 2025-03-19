@@ -2,10 +2,16 @@ package forms
 
 import (
 	"strconv"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+)
+
+// ui constants for view
+const (
+	dateLayout = "2006-01-02"
 )
 
 // parses uint64 with error handling
@@ -24,6 +30,15 @@ func parseUint16(value string) uint16 {
 		return 0 // if 0 is returned it will be further validated
 	}
 	return uint16(num)
+}
+
+// parses time.Time with error handling
+func parseDate(dateString string) time.Time {
+	parsedTime, err := time.Parse(dateLayout, dateString)
+	if err != nil {
+		return time.Time{} // if time.Time{} is returned it will be further validated
+	}
+	return parsedTime
 }
 
 // displays a message depending on whether an error occurs
