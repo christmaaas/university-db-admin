@@ -161,14 +161,19 @@ func showUpdateEmployeesForm(content *fyne.Container, r *repository.Repository) 
 }
 
 func showEmployeesList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
-	headers := []string{"ID сотрудника", "Имя", "Паспорт", "ID Должности"}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	headers := []string{
+		"ID сотрудника",
+		"Имя",
+		"Паспорт",
+		"ID Должности",
+	}
+	options := []string{
+		"Все",
+		"ID",
+		"Имя",
+		"Паспорт",
+		"ID Должности",
+	}
 	filterOptions := map[string]uint8{
 		"Все":          0,
 		"ID":           1,
@@ -177,8 +182,11 @@ func showEmployeesList(content *fyne.Container, r *repository.Repository) {
 		"ID Должности": 4,
 	}
 
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
-	filterSelect := widget.NewSelect([]string{"Все", "ID", "Имя", "Паспорт", "ID Должности"}, func(value string) {
+	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
 
 		if selectedField == 0 {
@@ -189,6 +197,7 @@ func showEmployeesList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -255,5 +264,4 @@ func showEmployeesList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }

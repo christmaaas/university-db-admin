@@ -209,8 +209,6 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 }
 
 func showMarksList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID оценки",
 		"ID преподавателя",
@@ -219,11 +217,15 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		"Оценка",
 		"Дата",
 	}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	options := []string{
+		"Все",
+		"ID",
+		"ID преподавателя",
+		"ID студента",
+		"ID предмета",
+		"Оценка",
+		"Дата",
+	}
 	filterOptions := map[string]uint8{
 		"Все":              0,
 		"ID":               1,
@@ -234,15 +236,9 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		"Дата":             6,
 	}
 
-	options := []string{
-		"Все",
-		"ID",
-		"ID преподавателя",
-		"ID студента",
-		"ID предмета",
-		"Оценка",
-		"Дата",
-	}
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
 	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
@@ -255,6 +251,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -326,5 +323,4 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }

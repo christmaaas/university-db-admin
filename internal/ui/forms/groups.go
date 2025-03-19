@@ -132,28 +132,24 @@ func showUpdateGroupsForm(content *fyne.Container, r *repository.Repository) {
 }
 
 func showGroupsList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID группы",
 		"Номер",
 	}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	options := []string{
+		"Все",
+		"ID",
+		"Номер",
+	}
 	filterOptions := map[string]uint8{
 		"Все":   0,
 		"ID":    1,
 		"Номер": 2,
 	}
 
-	options := []string{
-		"Все",
-		"ID",
-		"Номер",
-	}
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
 	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
@@ -166,6 +162,7 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -224,5 +221,4 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
