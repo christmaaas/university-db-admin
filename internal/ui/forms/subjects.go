@@ -220,7 +220,11 @@ func showSubjectsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	subjects, _ := r.Subjects.FindAll(context.Background())
+	subjects, err := r.Subjects.FindAll(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
 	for _, s := range subjects {
 		data = append(data, []string{
 			fmt.Sprintf("%d", s.ID),

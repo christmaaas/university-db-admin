@@ -296,7 +296,11 @@ func showLessonsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	lessons, _ := r.Lessons.FindAll(context.Background())
+	lessons, err := r.Lessons.FindAll(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
 	for _, l := range lessons {
 		data = append(data, []string{
 			fmt.Sprintf("%d", l.ID),

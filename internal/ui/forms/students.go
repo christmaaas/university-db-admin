@@ -263,7 +263,11 @@ func showStudentsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	students, _ := r.Students.FindAll(context.Background())
+	students, err := r.Students.FindAll(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
 	for _, s := range students {
 		data = append(data, []string{
 			fmt.Sprintf("%d", s.ID),

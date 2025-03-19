@@ -204,7 +204,11 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	groups, _ := r.Groups.FindAll(context.Background())
+	groups, err := r.Groups.FindAll(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
 	for _, g := range groups {
 		data = append(data, []string{
 			fmt.Sprintf("%d", g.ID),

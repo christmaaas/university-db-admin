@@ -252,7 +252,11 @@ func showEmployeesSubjectsList(content *fyne.Container, r *repository.Repository
 		content.Refresh()
 	})
 
-	empSbjs, _ := r.EmployeesSubjects.FindAll(context.Background())
+	empSbjs, err := r.EmployeesSubjects.FindAll(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
 	for _, e := range empSbjs {
 		data = append(data, []string{
 			fmt.Sprintf("%d", e.EmployeeID),

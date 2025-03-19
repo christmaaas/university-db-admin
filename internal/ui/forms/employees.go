@@ -245,7 +245,11 @@ func showEmployeesList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	employees, _ := r.Employees.FindAll(context.Background())
+	employees, err := r.Employees.FindAll(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
 	for _, e := range employees {
 		data = append(data, []string{
 			fmt.Sprintf("%d", e.ID),

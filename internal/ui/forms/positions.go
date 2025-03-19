@@ -204,7 +204,11 @@ func showPositionsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	positions, _ := r.Positions.FindAll(context.Background())
+	positions, err := r.Positions.FindAll(context.Background())
+	if err != nil {
+		showResult(content, err, "Ошибка при поиске")
+		return
+	}
 	for _, p := range positions {
 		data = append(data, []string{
 			fmt.Sprintf("%d", p.ID),
