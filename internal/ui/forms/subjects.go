@@ -39,7 +39,7 @@ func showAddSubjectsForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Добавить", func() {
 		err := validation.ValidateEmptyStrings(nameEntry.Text, dscrEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -49,12 +49,15 @@ func showAddSubjectsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(sbj); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Subjects.Create(context.Background(), sbj)
-		showResult(content, err, "Предмет добавлен")
+		if err = r.Subjects.Create(context.Background(), sbj); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Предмет добавлен")
 	})
 
 	form := container.NewVBox(
@@ -74,19 +77,22 @@ func showDeleteSubjectsForm(content *fyne.Container, r *repository.Repository) {
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Subjects.Delete(context.Background(), id)
-		showResult(content, err, "Предмет удален")
+		if err = r.Subjects.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Предмет удален")
 	})
 
 	form := container.NewVBox(
@@ -115,7 +121,7 @@ func showUpdateSubjectsForm(content *fyne.Container, r *repository.Repository) {
 			dscrEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -126,12 +132,15 @@ func showUpdateSubjectsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(sbj); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Subjects.Update(context.Background(), sbj.ID, sbj)
-		showResult(content, err, "Предмет обновлен")
+		if err = r.Subjects.Update(context.Background(), sbj.ID, sbj); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Предмет обновлен")
 	})
 
 	form := container.NewVBox(
@@ -203,7 +212,7 @@ func showSubjectsList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -222,7 +231,7 @@ func showSubjectsList(content *fyne.Container, r *repository.Repository) {
 
 	subjects, err := r.Subjects.FindAll(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 	for _, s := range subjects {

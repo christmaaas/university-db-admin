@@ -39,7 +39,7 @@ func showAddEmployeesSubjectsForm(content *fyne.Container, r *repository.Reposit
 	submitButton := widget.NewButton("Добавить", func() {
 		err := validation.ValidateEmptyStrings(employeeEntry.Text, subjectEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -49,24 +49,25 @@ func showAddEmployeesSubjectsForm(content *fyne.Container, r *repository.Reposit
 		}
 
 		if err = validation.ValidateStruct(es); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		res, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
 		if !res.IsTeacher {
 			if err != nil {
-				showResult(content, err, "")
+				showResult(content, "Ошибка: "+err.Error())
 			} else {
-				showResult(content, err,
-					"Ошибка: Указанный сотрудник не является преподавателем",
-				)
+				showResult(content, "Ошибка: Указанный сотрудник не является преподавателем")
 			}
 			return
 		}
 
-		err = r.EmployeesSubjects.Create(context.Background(), es)
-		showResult(content, err, "Знание предмета успешно добавлено")
+		if err = r.EmployeesSubjects.Create(context.Background(), es); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Знание предмета успешно добавлено")
 	})
 
 	form := container.NewVBox(
@@ -89,7 +90,7 @@ func showDeleteEmployeesSubjectsForm(content *fyne.Container, r *repository.Repo
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(employeeEntry.Text, subjectEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -97,12 +98,15 @@ func showDeleteEmployeesSubjectsForm(content *fyne.Container, r *repository.Repo
 		subjectID := parseUint64(subjectEntry.Text)
 		err = validation.ValidatePositiveNumbers(employeeID, subjectID)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.EmployeesSubjects.Delete(context.Background(), employeeID, subjectID)
-		showResult(content, err, "Знание предмета удалено")
+		if err = r.EmployeesSubjects.Delete(context.Background(), employeeID, subjectID); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Знание предмета удалено")
 	})
 
 	form := container.NewVBox(
@@ -136,7 +140,7 @@ func showUpdateEmployeesSubjectsForm(content *fyne.Container, r *repository.Repo
 			newSubjectEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -144,7 +148,7 @@ func showUpdateEmployeesSubjectsForm(content *fyne.Container, r *repository.Repo
 		sid := parseUint64(subjectEntry.Text)
 		err = validation.ValidatePositiveNumbers(eid, sid)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -154,24 +158,25 @@ func showUpdateEmployeesSubjectsForm(content *fyne.Container, r *repository.Repo
 		}
 
 		if err = validation.ValidateStruct(es); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		res, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
 		if !res.IsTeacher {
 			if err != nil {
-				showResult(content, err, "")
+				showResult(content, "Ошибка: "+err.Error())
 			} else {
-				showResult(content, err,
-					"Ошибка: Указанный сотрудник не является преподавателем",
-				)
+				showResult(content, "Ошибка: указанный сотрудник не является преподавателем")
 			}
 			return
 		}
 
-		err = r.EmployeesSubjects.Update(context.Background(), eid, sid, es)
-		showResult(content, err, "Знание предмета обновлено")
+		if err = r.EmployeesSubjects.Update(context.Background(), eid, sid, es); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Знание предмета обновлено")
 	})
 
 	form := container.NewVBox(
@@ -236,7 +241,7 @@ func showEmployeesSubjectsList(content *fyne.Container, r *repository.Repository
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -254,7 +259,7 @@ func showEmployeesSubjectsList(content *fyne.Container, r *repository.Repository
 
 	empSbjs, err := r.EmployeesSubjects.FindAll(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 	for _, e := range empSbjs {

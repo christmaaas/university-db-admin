@@ -56,7 +56,7 @@ func showEmployeesForm(content *fyne.Container, r *repository.Repository) {
 
 	data, err := r.Special.GetAllEmployees(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -82,20 +82,20 @@ func showEmployeeForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Применить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		data, err := r.Special.GetEmployeeByID(context.Background(), id)
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -123,7 +123,7 @@ func showStudentsNoCuratorForm(content *fyne.Container, r *repository.Repository
 
 	data, err := r.Special.GetStudentsNoCurator(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -150,7 +150,7 @@ func showEmployeesByPositionsForm(content *fyne.Container, r *repository.Reposit
 	submitButton := widget.NewButton("Применить", func() {
 		err := validation.ValidateEmptyStrings(firstIDEntry.Text, secondIDEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -158,13 +158,13 @@ func showEmployeesByPositionsForm(content *fyne.Container, r *repository.Reposit
 		secondID := parseUint64(secondIDEntry.Text)
 		err = validation.ValidatePositiveNumbers(firstID, secondID)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		data, err := r.Special.GetEmployeesByPositions(context.Background(), firstID, secondID)
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -205,7 +205,7 @@ func showMarksBySubjectForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Применить", func() {
 		err := validation.ValidateEmptyStrings(subjectIDEntry.Text, markEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -213,13 +213,13 @@ func showMarksBySubjectForm(content *fyne.Container, r *repository.Repository) {
 		mark := parseUint16(markEntry.Text)
 		err = validation.ValidatePositiveNumbers(id, mark)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		data, err := r.Special.GetMarksBySubject(context.Background(), id, mark)
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -258,13 +258,13 @@ func showStudentsByMiddlenameForm(content *fyne.Container, r *repository.Reposit
 	submitButton := widget.NewButton("Применить", func() {
 		err := validation.ValidateEmptyStrings(seqEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		data, err := r.Special.GetStudentsByMiddlename(context.Background(), seqEntry.Text)
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -294,7 +294,7 @@ func showSortedSubjectsForm(content *fyne.Container, r *repository.Repository) {
 
 	data, err := r.Special.GetSortedSubjects(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -316,7 +316,7 @@ func showSortedMarksForm(content *fyne.Container, r *repository.Repository) {
 
 	data, err := r.Special.GetSortedMarks(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -339,7 +339,7 @@ func showStudentGroupCombsForm(content *fyne.Container, r *repository.Repository
 
 	data, err := r.Special.GetStudentGroupCombs(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -365,7 +365,7 @@ func showLessonsScheduleForm(content *fyne.Container, r *repository.Repository) 
 
 	data, err := r.Special.GetLessonsSchedule(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -393,7 +393,7 @@ func showStudentsWithCuratorsForm(content *fyne.Container, r *repository.Reposit
 
 	data, err := r.Special.GetStudentsWithCurators(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -419,7 +419,7 @@ func showCuratorsWithStudentsForm(content *fyne.Container, r *repository.Reposit
 
 	data, err := r.Special.GetCuratorsWithStudents(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -445,7 +445,7 @@ func showAllStudentCuratorPairsForm(content *fyne.Container, r *repository.Repos
 
 	data, err := r.Special.GetAllStudentCuratorPairs(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 
@@ -470,7 +470,7 @@ func showStudentsUppercaseWithLengthForm(content *fyne.Container, r *repository.
 
 	data, err := r.Special.GetStudentsUppercaseWithLength(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 

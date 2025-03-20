@@ -46,7 +46,7 @@ func showAddEmployeesForm(content *fyne.Container, r *repository.Repository) {
 			positionEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -57,12 +57,15 @@ func showAddEmployeesForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(employee); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Employees.Create(context.Background(), employee)
-		showResult(content, err, "Сотрудник успешно добавлен")
+		if err = r.Employees.Create(context.Background(), employee); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Сотрудник успешно добавлен")
 	})
 
 	form := container.NewVBox(
@@ -83,19 +86,22 @@ func showDeleteEmployeesForm(content *fyne.Container, r *repository.Repository) 
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Employees.Delete(context.Background(), id)
-		showResult(content, err, "Сотрудник удалён")
+		if err = r.Employees.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Сотрудник удалён")
 	})
 
 	form := container.NewVBox(
@@ -128,7 +134,7 @@ func showUpdateEmployeesForm(content *fyne.Container, r *repository.Repository) 
 			positionEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -140,12 +146,15 @@ func showUpdateEmployeesForm(content *fyne.Container, r *repository.Repository) 
 		}
 
 		if err = validation.ValidateStruct(employee); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Employees.Update(context.Background(), employee.ID, employee)
-		showResult(content, err, "Сотрудник обновлён")
+		if err = r.Employees.Update(context.Background(), employee.ID, employee); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Сотрудник обновлён")
 	})
 
 	form := container.NewVBox(
@@ -227,7 +236,7 @@ func showEmployeesList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -247,7 +256,7 @@ func showEmployeesList(content *fyne.Container, r *repository.Repository) {
 
 	employees, err := r.Employees.FindAll(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 	for _, e := range employees {

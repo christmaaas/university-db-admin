@@ -41,18 +41,10 @@ func parseDate(dateString string) time.Time {
 	return parsedTime
 }
 
-// displays a message depending on whether an error occurs
-func showResult(content *fyne.Container, err error, successMessage string) {
+// displays a message msg as the result of some action
+func showResult(content *fyne.Container, msg string) {
 	content.Objects = nil
-	var labelText string
-
-	if err != nil {
-		labelText = "Ошибка: " + err.Error()
-	} else {
-		labelText = successMessage
-	}
-
-	content.Add(widget.NewLabel(labelText))
+	content.Add(widget.NewLabel(msg))
 	content.Refresh()
 }
 

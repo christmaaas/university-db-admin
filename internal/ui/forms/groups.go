@@ -36,7 +36,7 @@ func showAddGroupsForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Добавить", func() {
 		err := validation.ValidateEmptyStrings(numberEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -45,12 +45,15 @@ func showAddGroupsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(group); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Groups.Create(context.Background(), group)
-		showResult(content, err, "Группа успешно добавлена")
+		if err = r.Groups.Create(context.Background(), group); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Группа успешно добавлена")
 	})
 
 	form := container.NewVBox(
@@ -69,19 +72,22 @@ func showDeleteGroupsForm(content *fyne.Container, r *repository.Repository) {
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Groups.Delete(context.Background(), id)
-		showResult(content, err, "Группа удалена")
+		if err = r.Groups.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Группа удалена")
 	})
 
 	form := container.NewVBox(
@@ -103,7 +109,7 @@ func showUpdateGroupsForm(content *fyne.Container, r *repository.Repository) {
 	updateButton := widget.NewButton("Обновить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text, numberEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -113,12 +119,15 @@ func showUpdateGroupsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(group); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Groups.Update(context.Background(), group.ID, group)
-		showResult(content, err, "Группа обновлена")
+		if err = r.Groups.Update(context.Background(), group.ID, group); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Группа обновлена")
 	})
 
 	form := container.NewVBox(
@@ -188,7 +197,7 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -206,7 +215,7 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 
 	groups, err := r.Groups.FindAll(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 	for _, g := range groups {

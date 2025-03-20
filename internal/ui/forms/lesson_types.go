@@ -36,7 +36,7 @@ func showAddLessonTypesForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Добавить", func() {
 		err := validation.ValidateEmptyStrings(nameEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -45,12 +45,15 @@ func showAddLessonTypesForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(lessonType); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.LessonTypes.Create(context.Background(), lessonType)
-		showResult(content, err, "Тип занятия добавлен")
+		if err = r.LessonTypes.Create(context.Background(), lessonType); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Тип занятия добавлен")
 	})
 
 	form := container.NewVBox(
@@ -69,19 +72,22 @@ func showDeleteLessonTypesForm(content *fyne.Container, r *repository.Repository
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.LessonTypes.Delete(context.Background(), id)
-		showResult(content, err, "Тип занятия удален")
+		if err = r.LessonTypes.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Тип занятия удален")
 	})
 
 	form := container.NewVBox(
@@ -103,7 +109,7 @@ func showUpdateLessonTypesForm(content *fyne.Container, r *repository.Repository
 	updateButton := widget.NewButton("Обновить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text, nameEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -113,12 +119,15 @@ func showUpdateLessonTypesForm(content *fyne.Container, r *repository.Repository
 		}
 
 		if err = validation.ValidateStruct(lType); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.LessonTypes.Update(context.Background(), lType.ID, lType)
-		showResult(content, err, "Тип занятия обновлен")
+		if err = r.LessonTypes.Update(context.Background(), lType.ID, lType); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Тип занятия обновлен")
 	})
 
 	form := container.NewVBox(
@@ -188,7 +197,7 @@ func showLessonTypesList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -206,7 +215,7 @@ func showLessonTypesList(content *fyne.Container, r *repository.Repository) {
 
 	lTypes, err := r.LessonTypes.FindAll(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 	for _, l := range lTypes {

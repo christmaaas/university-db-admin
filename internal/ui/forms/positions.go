@@ -36,7 +36,7 @@ func showAddPositionsForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Добавить", func() {
 		err := validation.ValidateEmptyStrings(nameEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -45,12 +45,15 @@ func showAddPositionsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(pos); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Positions.Create(context.Background(), pos)
-		showResult(content, err, "Должность добавлена")
+		if err = r.Positions.Create(context.Background(), pos); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Должность добавлена")
 	})
 
 	form := container.NewVBox(
@@ -69,19 +72,22 @@ func showDeletePositionsForm(content *fyne.Container, r *repository.Repository) 
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Positions.Delete(context.Background(), id)
-		showResult(content, err, "Должность удалена")
+		if err = r.Positions.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Должность удалена")
 	})
 
 	form := container.NewVBox(
@@ -103,7 +109,7 @@ func showUpdatePositionsForm(content *fyne.Container, r *repository.Repository) 
 	updateButton := widget.NewButton("Обновить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text, nameEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -113,12 +119,15 @@ func showUpdatePositionsForm(content *fyne.Container, r *repository.Repository) 
 		}
 
 		if err = validation.ValidateStruct(pos); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Positions.Update(context.Background(), pos.ID, pos)
-		showResult(content, err, "Должность обновлена")
+		if err = r.Positions.Update(context.Background(), pos.ID, pos); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Должность обновлена")
 	})
 
 	form := container.NewVBox(
@@ -188,7 +197,7 @@ func showPositionsList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -206,7 +215,7 @@ func showPositionsList(content *fyne.Container, r *repository.Repository) {
 
 	positions, err := r.Positions.FindAll(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 	for _, p := range positions {

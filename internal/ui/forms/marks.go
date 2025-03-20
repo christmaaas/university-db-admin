@@ -54,7 +54,7 @@ func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 			dateEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -67,24 +67,25 @@ func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(mark); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		res, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
 		if !res.IsTeacher {
 			if err != nil {
-				showResult(content, err, "")
+				showResult(content, "Ошибка: "+err.Error())
 			} else {
-				showResult(content, err,
-					"Ошибка: Указанный сотрудник не является преподавателем",
-				)
+				showResult(content, "Ошибка: указанный сотрудник не является преподавателем")
 			}
 			return
 		}
 
-		err = r.Marks.Create(context.Background(), mark)
-		showResult(content, err, "Оценка успешно добавлена")
+		if err = r.Marks.Create(context.Background(), mark); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Оценка успешно добавлена")
 	})
 
 	form := container.NewVBox(
@@ -107,19 +108,22 @@ func showDeleteMarksForm(content *fyne.Container, r *repository.Repository) {
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Marks.Delete(context.Background(), id)
-		showResult(content, err, "Оценка удалена")
+		if err = r.Marks.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Оценка удалена")
 	})
 
 	form := container.NewVBox(
@@ -160,7 +164,7 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 			dateEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -174,24 +178,25 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(mark); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		res, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
 		if !res.IsTeacher {
 			if err != nil {
-				showResult(content, err, "")
+				showResult(content, "Ошибка: "+err.Error())
 			} else {
-				showResult(content, err,
-					"Ошибка: Указанный сотрудник не является преподавателем",
-				)
+				showResult(content, "Ошибка: указанный сотрудник не является преподавателем")
 			}
 			return
 		}
 
-		err = r.Marks.Update(context.Background(), mark.ID, mark)
-		showResult(content, err, "Оценка обновлена")
+		if err = r.Marks.Update(context.Background(), mark.ID, mark); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Оценка обновлена")
 	})
 
 	form := container.NewVBox(
@@ -282,7 +287,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -304,7 +309,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 
 	marks, err := r.Marks.FindAll(context.Background())
 	if err != nil {
-		showResult(content, err, "Ошибка при поиске")
+		showResult(content, "Ошибка: "+err.Error())
 		return
 	}
 	for _, m := range marks {
