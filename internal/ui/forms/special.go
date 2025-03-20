@@ -54,7 +54,7 @@ func showEmployeesForm(content *fyne.Container, r *repository.Repository) {
 		"Номер паспорта",
 	}
 
-	data, err := r.Special.GetAllEmployees(context.Background())
+	data, err := r.Employees.FindAllNamePassport(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -93,7 +93,7 @@ func showEmployeeForm(content *fyne.Container, r *repository.Repository) {
 			return
 		}
 
-		data, err := r.Special.GetEmployeeByID(context.Background(), id)
+		data, err := r.Employees.FindNamePassportByID(context.Background(), id)
 		if err != nil {
 			showResult(content, "Ошибка: "+err.Error())
 			return
@@ -121,7 +121,7 @@ func showStudentsNoCuratorForm(content *fyne.Container, r *repository.Repository
 		"ID группы",
 	}
 
-	data, err := r.Special.GetStudentsNoCurator(context.Background())
+	data, err := r.Students.FindAllWithNoCurator(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -162,7 +162,7 @@ func showEmployeesByPositionsForm(content *fyne.Container, r *repository.Reposit
 			return
 		}
 
-		data, err := r.Special.GetEmployeesByPositions(context.Background(), firstID, secondID)
+		data, err := r.Employees.FindAllByPositions(context.Background(), firstID, secondID)
 		if err != nil {
 			showResult(content, "Ошибка: "+err.Error())
 			return
@@ -217,7 +217,7 @@ func showMarksBySubjectForm(content *fyne.Container, r *repository.Repository) {
 			return
 		}
 
-		data, err := r.Special.GetMarksBySubject(context.Background(), id, mark)
+		data, err := r.Marks.FindAllBySubject(context.Background(), id, mark)
 		if err != nil {
 			showResult(content, "Ошибка: "+err.Error())
 			return
@@ -262,7 +262,7 @@ func showStudentsByMiddlenameForm(content *fyne.Container, r *repository.Reposit
 			return
 		}
 
-		data, err := r.Special.GetStudentsByMiddlename(context.Background(), seqEntry.Text)
+		data, err := r.Students.FindAllByMiddlename(context.Background(), seqEntry.Text)
 		if err != nil {
 			showResult(content, "Ошибка: "+err.Error())
 			return
@@ -292,7 +292,7 @@ func showStudentsByMiddlenameForm(content *fyne.Container, r *repository.Reposit
 func showSortedSubjectsForm(content *fyne.Container, r *repository.Repository) {
 	headers := []string{"Название"}
 
-	data, err := r.Special.GetSortedSubjects(context.Background())
+	data, err := r.Subjects.FindAllSorted(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -314,7 +314,7 @@ func showSortedMarksForm(content *fyne.Container, r *repository.Repository) {
 		"Дата",
 	}
 
-	data, err := r.Special.GetSortedMarks(context.Background())
+	data, err := r.Marks.FindAllSorted(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -337,7 +337,7 @@ func showStudentGroupCombsForm(content *fyne.Container, r *repository.Repository
 		"Номер группы",
 	}
 
-	data, err := r.Special.GetStudentGroupCombs(context.Background())
+	data, err := r.Students.FindAllGroupCombs(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -363,7 +363,7 @@ func showLessonsScheduleForm(content *fyne.Container, r *repository.Repository) 
 		"День недели",
 	}
 
-	data, err := r.Special.GetLessonsSchedule(context.Background())
+	data, err := r.Lessons.FindSchedule(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -391,7 +391,7 @@ func showStudentsWithCuratorsForm(content *fyne.Container, r *repository.Reposit
 		"Паспорт куратора",
 	}
 
-	data, err := r.Special.GetStudentsWithCurators(context.Background())
+	data, err := r.Students.FindAllWithCurators(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -417,7 +417,7 @@ func showCuratorsWithStudentsForm(content *fyne.Container, r *repository.Reposit
 		"Паспорт куратора",
 	}
 
-	data, err := r.Special.GetCuratorsWithStudents(context.Background())
+	data, err := r.Students.FindWithAllCurators(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -443,7 +443,7 @@ func showAllStudentCuratorPairsForm(content *fyne.Container, r *repository.Repos
 		"Паспорт куратора",
 	}
 
-	data, err := r.Special.GetAllStudentCuratorPairs(context.Background())
+	data, err := r.Students.FindAllPairsWithCurator(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return
@@ -468,7 +468,7 @@ func showStudentsUppercaseWithLengthForm(content *fyne.Container, r *repository.
 		"Длина ФИО",
 	}
 
-	data, err := r.Special.GetStudentsUppercaseWithLength(context.Background())
+	data, err := r.Students.FindAllUppercaseWithLength(context.Background())
 	if err != nil {
 		showResult(content, "Ошибка: "+err.Error())
 		return

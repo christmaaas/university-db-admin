@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"university-db-admin/internal/domain"
+	"university-db-admin/internal/dto"
 	"university-db-admin/internal/repository"
 
 	"github.com/jackc/pgx/v5"
@@ -159,6 +160,72 @@ func (m *marksRepository) FindByMark(ctx context.Context, mark uint16) ([]domain
 
 func (m *marksRepository) FindByDate(ctx context.Context, date string) ([]domain.Mark, error) {
 	return m.findByField(ctx, "date", date)
+}
+
+func (r *marksRepository) FindAllBySubject(ctx context.Context, id uint64, m uint16) ([]dto.MarkBySubjectDTO, error) {
+	sql := `
+		SELECT marks.student_id, marks.mark, marks.date
+		FROM public.marks
+		WHERE subject_id = $1 AND mark > $2
+	`
+
+	log.Println("executing sql:", sql)
+
+	rows, err := r.db.Query(ctx, sql, id, m)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	var result []dto.MarkBySubjectDTO
+	for rows.Next() {
+		var dto dto.MarkBySubjectDTO
+		err := rows.Scan(
+			&dto.StudentID,
+			&dto.Mark,
+			&dto.Date,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+		result = append(result, dto)
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
+func (r *marksRepository) FindAllSorted(ctx context.Context) ([]dto.SortedMarkDTO, error) {
+	sql := `
+		SELECT marks.student_id, marks.mark, marks.date
+		FROM public.marks
+		ORDER BY marks.date ASC, marks.mark DESC
+	`
+
+	log.Println("executing sql:", sql)
+
+	rows, err := r.db.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	var result []dto.SortedMarkDTO
+	for rows.Next() {
+		var dto dto.SortedMarkDTO
+		err := rows.Scan(
+			&dto.StudentID,
+			&dto.Mark,
+			&dto.Date,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+		result = append(result, dto)
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
 }
 
 func (m *marksRepository) Update(ctx context.Context, id uint64, mark domain.Mark) error {

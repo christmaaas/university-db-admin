@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"university-db-admin/internal/domain"
+	"university-db-admin/internal/dto"
 	"university-db-admin/internal/repository"
 
 	"github.com/jackc/pgx/v5"
@@ -164,6 +165,49 @@ func (l *lessonsRepository) FindByWeekday(ctx context.Context, weekday uint16) (
 
 func (l *lessonsRepository) FindByRoom(ctx context.Context, room uint64) ([]domain.Lesson, error) {
 	return l.findByField(ctx, "room", room)
+}
+
+func (r *lessonsRepository) FindSchedule(ctx context.Context) ([]dto.LessonScheduleDTO, error) {
+	sql := `
+		SELECT groups.number,
+			subjects.name,
+			lesson_types.name,
+			lessons.room,
+			lessons.week,
+			lessons.weekday
+		FROM public.lessons
+		INNER JOIN public.groups ON lessons.group_id = groups.id
+		INNER JOIN public.subjects ON lessons.subject_id = subjects.id
+		INNER JOIN public.lesson_types ON lessons.lesson_type_id = lesson_types.id
+	`
+
+	log.Println("executing sql:", sql)
+
+	rows, err := r.db.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	var result []dto.LessonScheduleDTO
+	for rows.Next() {
+		var dto dto.LessonScheduleDTO
+		err := rows.Scan(
+			&dto.GroupNumber,
+			&dto.Subject,
+			&dto.LessonType,
+			&dto.Room,
+			&dto.Week,
+			&dto.Weekday,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+		result = append(result, dto)
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
 }
 
 func (l *lessonsRepository) Update(ctx context.Context, id uint64, lsn domain.Lesson) error {

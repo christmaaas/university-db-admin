@@ -33,7 +33,6 @@ func NewApp() App {
 	marks := postgres.NewMarksRepository(pg)
 	students := postgres.NewStudentsRepository(pg)
 	employeesSubjects := postgres.NewEmployeesSubjectsRepository(pg)
-	special := postgres.NewSpecialRequestsRepository(pg)
 
 	log.Println("application initialized")
 
@@ -49,7 +48,6 @@ func NewApp() App {
 			Marks:             marks,
 			Students:          students,
 			EmployeesSubjects: employeesSubjects,
-			Special:           special,
 		},
 	}
 }

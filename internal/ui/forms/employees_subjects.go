@@ -53,7 +53,7 @@ func showAddEmployeesSubjectsForm(content *fyne.Container, r *repository.Reposit
 			return
 		}
 
-		res, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
+		res, err := r.Employees.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
 		if !res.IsTeacher {
 			if err != nil {
 				showResult(content, "Ошибка: "+err.Error())
@@ -162,7 +162,7 @@ func showUpdateEmployeesSubjectsForm(content *fyne.Container, r *repository.Repo
 			return
 		}
 
-		res, err := r.Special.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
+		res, err := r.Employees.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
 		if !res.IsTeacher {
 			if err != nil {
 				showResult(content, "Ошибка: "+err.Error())

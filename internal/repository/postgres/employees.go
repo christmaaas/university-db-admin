@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"university-db-admin/internal/domain"
+	"university-db-admin/internal/dto"
 	"university-db-admin/internal/repository"
 
 	"github.com/jackc/pgx/v5"
@@ -185,6 +186,111 @@ func (e *employeesRepository) FindByPosition(ctx context.Context, position uint6
 
 	log.Println("sql result:", emps)
 	return emps, nil
+}
+
+func (r *employeesRepository) FindAllNamePassport(ctx context.Context) ([]dto.EmployeeDTO, error) {
+	sql := `
+        SELECT employees.name, employees.passport
+        FROM public.employees
+    `
+
+	log.Println("executing sql:", sql)
+
+	rows, err := r.db.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	var result []dto.EmployeeDTO
+	for rows.Next() {
+		var dto dto.EmployeeDTO
+		err := rows.Scan(
+			&dto.Name,
+			&dto.Passport,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+		result = append(result, dto)
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
+func (r *employeesRepository) FindNamePassportByID(ctx context.Context, id uint64) (dto.EmployeeDTO, error) {
+	sql := `
+        SELECT employees.name, employees.passport
+        FROM public.employees
+        WHERE employees.id = $1
+    `
+
+	log.Println("executing sql:", sql)
+
+	row := r.db.QueryRow(ctx, sql, id)
+
+	var dto dto.EmployeeDTO
+	err := row.Scan(
+		&dto.Name,
+		&dto.Passport,
+	)
+	if err != nil {
+		return dto, handlePgError(err)
+	}
+
+	log.Println("sql result:", dto)
+	return dto, nil
+}
+
+func (r *employeesRepository) FindAllByPositions(ctx context.Context, firstID, secondID uint64) ([]dto.EmployeePositionDTO, error) {
+	sql := `
+		SELECT employees.name
+		FROM public.employees
+		WHERE employees.position_id = $1 OR employees.position_id = $2
+	`
+
+	log.Println("executing sql:", sql)
+
+	rows, err := r.db.Query(ctx, sql, firstID, secondID)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	var result []dto.EmployeePositionDTO
+	for rows.Next() {
+		var dto dto.EmployeePositionDTO
+		err := rows.Scan(&dto.Name)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+		result = append(result, dto)
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
+func (r *employeesRepository) IsTeacher(ctx context.Context, id uint64) (dto.EmployeeRoleDTO, error) {
+	const teacherName = "Преподаватель"
+	sql := `
+		SELECT EXISTS (
+			SELECT 1 
+			FROM employees e
+			INNER JOIN positions p ON e.position_id = p.id
+			WHERE e.id = $1 AND p.name = $2
+		)
+	`
+
+	var dto dto.EmployeeRoleDTO
+	err := r.db.QueryRow(ctx, sql, id, teacherName).Scan(&dto.IsTeacher)
+	if err != nil {
+		return dto, handlePgError(err)
+	}
+
+	log.Println("sql result:", dto)
+	return dto, nil
 }
 
 func (e *employeesRepository) Update(ctx context.Context, id uint64, emp domain.Employee) error {
