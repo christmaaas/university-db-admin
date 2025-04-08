@@ -12,17 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowSubjectsForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowSubjectsForm(content *fyne.Container, action int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
-	case "Добавить":
+	case 0:
 		showAddSubjectsForm(content, r)
-	case "Удалить":
+	case 1:
 		showDeleteSubjectsForm(content, r)
-	case "Обновить":
+	case 2:
 		showUpdateSubjectsForm(content, r)
-	case "Просмотреть":
+	case 3:
 		showSubjectsList(content, r)
 	}
 
@@ -39,7 +39,7 @@ func showAddSubjectsForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Добавить", func() {
 		err := validation.ValidateEmptyStrings(nameEntry.Text, dscrEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -49,12 +49,15 @@ func showAddSubjectsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(sbj); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Subjects.Create(context.Background(), sbj)
-		showResult(content, err, "Предмет добавлен")
+		if err = r.Subjects.Create(context.Background(), sbj); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Предмет добавлен")
 	})
 
 	form := container.NewVBox(
@@ -74,19 +77,22 @@ func showDeleteSubjectsForm(content *fyne.Container, r *repository.Repository) {
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Subjects.Delete(context.Background(), id)
-		showResult(content, err, "Предмет удален")
+		if err = r.Subjects.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Предмет удален")
 	})
 
 	form := container.NewVBox(
@@ -115,7 +121,7 @@ func showUpdateSubjectsForm(content *fyne.Container, r *repository.Repository) {
 			dscrEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -126,12 +132,15 @@ func showUpdateSubjectsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(sbj); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Subjects.Update(context.Background(), sbj.ID, sbj)
-		showResult(content, err, "Предмет обновлен")
+		if err = r.Subjects.Update(context.Background(), sbj.ID, sbj); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Предмет обновлен")
 	})
 
 	form := container.NewVBox(
@@ -146,29 +155,25 @@ func showUpdateSubjectsForm(content *fyne.Container, r *repository.Repository) {
 }
 
 func showSubjectsList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID предмета",
 		"Название",
 		"Описание",
 	}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	options := []string{
+		"Все",
+		"ID",
+		"Название",
+	}
 	filterOptions := map[string]uint8{
 		"Все":      0,
 		"ID":       1,
 		"Название": 2,
 	}
 
-	options := []string{
-		"Все",
-		"ID",
-		"Название",
-	}
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
 	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
@@ -181,6 +186,7 @@ func showSubjectsList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -206,7 +212,7 @@ func showSubjectsList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -223,7 +229,11 @@ func showSubjectsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	subjects, _ := r.Subjects.FindAll(context.Background())
+	subjects, err := r.Subjects.FindAll(context.Background())
+	if err != nil {
+		showResult(content, "Ошибка: "+err.Error())
+		return
+	}
 	for _, s := range subjects {
 		data = append(data, []string{
 			fmt.Sprintf("%d", s.ID),
@@ -241,5 +251,4 @@ func showSubjectsList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }

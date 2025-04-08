@@ -2,10 +2,16 @@ package forms
 
 import (
 	"strconv"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+)
+
+// ui constants for view
+const (
+	dateLayout = "2006-01-02"
 )
 
 // parses uint64 with error handling
@@ -26,18 +32,19 @@ func parseUint16(value string) uint16 {
 	return uint16(num)
 }
 
-// displays a message depending on whether an error occurs
-func showResult(content *fyne.Container, err error, successMessage string) {
-	content.Objects = nil
-	var labelText string
-
+// parses time.Time with error handling
+func parseDate(dateString string) time.Time {
+	parsedTime, err := time.Parse(dateLayout, dateString)
 	if err != nil {
-		labelText = "Ошибка: " + err.Error()
-	} else {
-		labelText = successMessage
+		return time.Time{} // if time.Time{} is returned it will be further validated
 	}
+	return parsedTime
+}
 
-	content.Add(widget.NewLabel(labelText))
+// displays a message msg as the result of some action
+func showResult(content *fyne.Container, msg string) {
+	content.Objects = nil
+	content.Add(widget.NewLabel(msg))
 	content.Refresh()
 }
 

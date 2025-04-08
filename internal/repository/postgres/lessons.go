@@ -4,18 +4,19 @@ import (
 	"context"
 	"log"
 	"university-db-admin/internal/domain"
+	"university-db-admin/internal/dto"
 	"university-db-admin/internal/repository"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type lessonsRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewLessonsRepository(dbclient *pgx.Conn) repository.Lessons {
+func NewLessonsRepository(db *pgx.Conn) repository.Lessons {
 	return &lessonsRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -27,7 +28,7 @@ func (l *lessonsRepository) Create(ctx context.Context, lsn domain.Lesson) error
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql,
+	err := l.db.QueryRow(ctx, sql,
 		lsn.GroupID,
 		lsn.SubjectID,
 		lsn.LessonTypeID,
@@ -52,7 +53,7 @@ func (l *lessonsRepository) FindOne(ctx context.Context, id uint64) (domain.Less
 
 	var lsn domain.Lesson
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, id).Scan(
+	err := l.db.QueryRow(ctx, sql, id).Scan(
 		&lsn.ID,
 		&lsn.GroupID,
 		&lsn.SubjectID,
@@ -78,7 +79,7 @@ func (l *lessonsRepository) FindAll(ctx context.Context) ([]domain.Lesson, error
 	var lessons []domain.Lesson
 	log.Println("executing sql:", sql)
 
-	rows, err := l.dbclient.Query(ctx, sql)
+	rows, err := l.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -115,7 +116,7 @@ func (l *lessonsRepository) findByField(ctx context.Context, field string, value
 	var lessons []domain.Lesson
 	log.Println("executing sql:", sql)
 
-	rows, err := l.dbclient.Query(ctx, sql, value)
+	rows, err := l.db.Query(ctx, sql, value)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -166,6 +167,49 @@ func (l *lessonsRepository) FindByRoom(ctx context.Context, room uint64) ([]doma
 	return l.findByField(ctx, "room", room)
 }
 
+func (r *lessonsRepository) FindSchedule(ctx context.Context) ([]dto.LessonScheduleDTO, error) {
+	sql := `
+		SELECT groups.number,
+			subjects.name,
+			lesson_types.name,
+			lessons.room,
+			lessons.week,
+			lessons.weekday
+		FROM public.lessons
+		INNER JOIN public.groups ON lessons.group_id = groups.id
+		INNER JOIN public.subjects ON lessons.subject_id = subjects.id
+		INNER JOIN public.lesson_types ON lessons.lesson_type_id = lesson_types.id
+	`
+
+	log.Println("executing sql:", sql)
+
+	rows, err := r.db.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	var result []dto.LessonScheduleDTO
+	for rows.Next() {
+		var dto dto.LessonScheduleDTO
+		err := rows.Scan(
+			&dto.GroupNumber,
+			&dto.Subject,
+			&dto.LessonType,
+			&dto.Room,
+			&dto.Week,
+			&dto.Weekday,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+		result = append(result, dto)
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
 func (l *lessonsRepository) Update(ctx context.Context, id uint64, lsn domain.Lesson) error {
 	sql := `
 		UPDATE public.lessons
@@ -175,7 +219,7 @@ func (l *lessonsRepository) Update(ctx context.Context, id uint64, lsn domain.Le
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql,
+	err := l.db.QueryRow(ctx, sql,
 		lsn.GroupID,
 		lsn.SubjectID,
 		lsn.LessonTypeID,
@@ -200,7 +244,7 @@ func (l *lessonsRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := l.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}

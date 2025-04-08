@@ -12,17 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowMarksForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowMarksForm(content *fyne.Container, action int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
-	case "Добавить":
+	case 0:
 		showAddMarksForm(content, r)
-	case "Удалить":
+	case 1:
 		showDeleteMarksForm(content, r)
-	case "Обновить":
+	case 2:
 		showUpdateMarksForm(content, r)
-	case "Просмотреть":
+	case 3:
 		showMarksList(content, r)
 	}
 
@@ -54,7 +54,7 @@ func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 			dateEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -63,28 +63,29 @@ func showAddMarksForm(content *fyne.Container, r *repository.Repository) {
 			StudentID:  parseUint64(studentEntry.Text),
 			SubjectID:  parseUint64(subjectEntry.Text),
 			Mark:       parseUint16(markEntry.Text),
-			Date:       dateEntry.Text,
+			Date:       parseDate(dateEntry.Text),
 		}
 
 		if err = validation.ValidateStruct(mark); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		isT, err := r.IsEmployeeTeacher(parseUint64(employeeEntry.Text))
-		if !isT {
+		res, err := r.Employees.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
+		if !res.IsTeacher {
 			if err != nil {
-				showResult(content, err, "")
+				showResult(content, "Ошибка: "+err.Error())
 			} else {
-				showResult(content, err,
-					"Ошибка: Указанный сотрудник не является преподавателем",
-				)
+				showResult(content, "Ошибка: указанный сотрудник не является преподавателем")
 			}
 			return
 		}
 
-		err = r.Marks.Create(context.Background(), mark)
-		showResult(content, err, "Оценка успешно добавлена")
+		if err = r.Marks.Create(context.Background(), mark); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Оценка успешно добавлена")
 	})
 
 	form := container.NewVBox(
@@ -107,19 +108,22 @@ func showDeleteMarksForm(content *fyne.Container, r *repository.Repository) {
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Marks.Delete(context.Background(), id)
-		showResult(content, err, "Оценка удалена")
+		if err = r.Marks.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Оценка удалена")
 	})
 
 	form := container.NewVBox(
@@ -160,7 +164,7 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 			dateEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -170,28 +174,29 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 			StudentID:  parseUint64(studentEntry.Text),
 			SubjectID:  parseUint64(subjectEntry.Text),
 			Mark:       parseUint16(markEntry.Text),
-			Date:       dateEntry.Text,
+			Date:       parseDate(dateEntry.Text),
 		}
 
 		if err = validation.ValidateStruct(mark); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		isT, err := r.IsEmployeeTeacher(parseUint64(employeeEntry.Text))
-		if !isT {
+		res, err := r.Employees.IsTeacher(context.Background(), parseUint64(employeeEntry.Text))
+		if !res.IsTeacher {
 			if err != nil {
-				showResult(content, err, "")
+				showResult(content, "Ошибка: "+err.Error())
 			} else {
-				showResult(content, err,
-					"Ошибка: Указанный сотрудник не является преподавателем",
-				)
+				showResult(content, "Ошибка: указанный сотрудник не является преподавателем")
 			}
 			return
 		}
 
-		err = r.Marks.Update(context.Background(), mark.ID, mark)
-		showResult(content, err, "Оценка обновлена")
+		if err = r.Marks.Update(context.Background(), mark.ID, mark); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Оценка обновлена")
 	})
 
 	form := container.NewVBox(
@@ -209,8 +214,6 @@ func showUpdateMarksForm(content *fyne.Container, r *repository.Repository) {
 }
 
 func showMarksList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID оценки",
 		"ID преподавателя",
@@ -219,11 +222,15 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		"Оценка",
 		"Дата",
 	}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	options := []string{
+		"Все",
+		"ID",
+		"ID преподавателя",
+		"ID студента",
+		"ID предмета",
+		"Оценка",
+		"Дата",
+	}
 	filterOptions := map[string]uint8{
 		"Все":              0,
 		"ID":               1,
@@ -234,15 +241,9 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		"Дата":             6,
 	}
 
-	options := []string{
-		"Все",
-		"ID",
-		"ID преподавателя",
-		"ID студента",
-		"ID предмета",
-		"Оценка",
-		"Дата",
-	}
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
 	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
@@ -255,6 +256,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -285,7 +287,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -296,7 +298,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 				fmt.Sprintf("%d", m.StudentID),
 				fmt.Sprintf("%d", m.SubjectID),
 				fmt.Sprintf("%d", m.Mark),
-				m.Date,
+				m.Date.Format(dateLayout),
 			})
 		}
 
@@ -305,7 +307,11 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	marks, _ := r.Marks.FindAll(context.Background())
+	marks, err := r.Marks.FindAll(context.Background())
+	if err != nil {
+		showResult(content, "Ошибка: "+err.Error())
+		return
+	}
 	for _, m := range marks {
 		data = append(data, []string{
 			fmt.Sprintf("%d", m.ID),
@@ -313,7 +319,7 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 			fmt.Sprintf("%d", m.StudentID),
 			fmt.Sprintf("%d", m.SubjectID),
 			fmt.Sprintf("%d", m.Mark),
-			m.Date,
+			m.Date.Format(dateLayout),
 		})
 	}
 
@@ -326,5 +332,4 @@ func showMarksList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }

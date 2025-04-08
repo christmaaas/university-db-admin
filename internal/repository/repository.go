@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"university-db-admin/internal/domain"
+	"university-db-admin/internal/dto"
 )
 
 type Repository struct {
@@ -24,6 +25,10 @@ type Employees interface {
 	FindByName(ctx context.Context, name string) ([]domain.Employee, error)
 	FindByPassport(ctx context.Context, passport string) (domain.Employee, error)
 	FindByPosition(ctx context.Context, position uint64) ([]domain.Employee, error)
+	FindAllNamePassport(ctx context.Context) ([]dto.EmployeeDTO, error)
+	FindNamePassportByID(ctx context.Context, id uint64) (dto.EmployeeDTO, error)
+	FindAllByPositions(ctx context.Context, firstID, secondID uint64) ([]dto.EmployeePositionDTO, error)
+	IsTeacher(ctx context.Context, id uint64) (dto.EmployeeRoleDTO, error)
 	Update(ctx context.Context, id uint64, emp domain.Employee) error
 	Delete(ctx context.Context, id uint64) error
 }
@@ -56,6 +61,7 @@ type Lessons interface {
 	FindByWeek(ctx context.Context, week uint16) ([]domain.Lesson, error)
 	FindByWeekday(ctx context.Context, weekday uint16) ([]domain.Lesson, error)
 	FindByRoom(ctx context.Context, room uint64) ([]domain.Lesson, error)
+	FindSchedule(ctx context.Context) ([]dto.LessonScheduleDTO, error)
 	Update(ctx context.Context, id uint64, emp domain.Lesson) error
 	Delete(ctx context.Context, id uint64) error
 }
@@ -69,6 +75,8 @@ type Marks interface {
 	FindBySubjectID(ctx context.Context, id uint64) ([]domain.Mark, error)
 	FindByMark(ctx context.Context, mark uint16) ([]domain.Mark, error)
 	FindByDate(ctx context.Context, date string) ([]domain.Mark, error)
+	FindAllBySubject(ctx context.Context, id uint64, m uint16) ([]dto.MarkBySubjectDTO, error)
+	FindAllSorted(ctx context.Context) ([]dto.SortedMarkDTO, error)
 	Update(ctx context.Context, id uint64, mark domain.Mark) error
 	Delete(ctx context.Context, id uint64) error
 }
@@ -90,6 +98,13 @@ type Students interface {
 	FindByPassport(ctx context.Context, passport string) (domain.Student, error)
 	FindByEmployeeID(ctx context.Context, id uint64) ([]domain.Student, error)
 	FindByGroupID(ctx context.Context, id uint64) ([]domain.Student, error)
+	FindAllWithNoCurator(ctx context.Context) ([]dto.StudentNoCuratorDTO, error)
+	FindAllByMiddlename(ctx context.Context, m string) ([]dto.StudentByNameDTO, error)
+	FindAllGroupCombs(ctx context.Context) ([]dto.StudentGroupCombDTO, error)
+	FindAllWithCurators(ctx context.Context) ([]dto.StudentCuratorDTO, error)
+	FindWithAllCurators(ctx context.Context) ([]dto.StudentCuratorDTO, error)
+	FindAllPairsWithCurator(ctx context.Context) ([]dto.StudentCuratorDTO, error)
+	FindAllUppercaseWithLength(ctx context.Context) ([]dto.StudentNameStatDTO, error)
 	Update(ctx context.Context, id uint64, stud domain.Student) error
 	Delete(ctx context.Context, id uint64) error
 }
@@ -99,6 +114,7 @@ type Subjects interface {
 	FindOne(ctx context.Context, id uint64) (domain.Subject, error)
 	FindAll(ctx context.Context) ([]domain.Subject, error)
 	FindByName(ctx context.Context, name string) (domain.Subject, error)
+	FindAllSorted(ctx context.Context) ([]dto.SortedSubjectDTO, error)
 	Update(ctx context.Context, id uint64, sbj domain.Subject) error
 	Delete(ctx context.Context, id uint64) error
 }

@@ -1,17 +1,23 @@
+GO=go
+
+BUILD_DIR=build
+OUT_DIR=$(BUILD_DIR)/bin
+APP_DIR=cmd/university_db_admin
+
 linux_build:
-	go build -o build/bin/app.out cmd/university_db_admin/main.go
+	$(GO) build -o $(OUT_DIR)/app.out $(APP_DIR)/main.go
 
 linux_run: linux_build
-	./build/bin/app.out
+	./$(OUT_DIR)/app.out
 
 win_build:
-	go build -o build/bin/app.exe cmd/university_db_admin/main.go
+	$(GO) build -o $(OUT_DIR)/app.exe $(APP_DIR)/main.go
 
 win_run: win_build
-	./build/bin/app.exe
+	./$(OUT_DIR)/app.exe
 	
 linux_clean:
-	rm -rf build
+	rm -rf $(BUILD_DIR)
 
 win_clean:
-	rd /s /q build
+	rd /s /q $(BUILD_DIR)

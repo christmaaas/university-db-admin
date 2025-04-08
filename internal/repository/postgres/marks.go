@@ -3,20 +3,20 @@ package postgres
 import (
 	"context"
 	"log"
-	"time"
 	"university-db-admin/internal/domain"
+	"university-db-admin/internal/dto"
 	"university-db-admin/internal/repository"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type marksRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewMarksRepository(dbclient *pgx.Conn) repository.Marks {
+func NewMarksRepository(db *pgx.Conn) repository.Marks {
 	return &marksRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -28,7 +28,7 @@ func (m *marksRepository) Create(ctx context.Context, mark domain.Mark) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := m.dbclient.QueryRow(ctx, sql,
+	err := m.db.QueryRow(ctx, sql,
 		mark.EmployeeID,
 		mark.StudentID,
 		mark.SubjectID,
@@ -50,26 +50,22 @@ func (m *marksRepository) FindOne(ctx context.Context, id uint64) (domain.Mark, 
         WHERE id = $1
     `
 
-	var (
-		mark domain.Mark
-		date time.Time
-	)
+	var mark domain.Mark
 
 	log.Println("executing sql:", sql)
-	err := m.dbclient.QueryRow(ctx, sql, id).Scan(
+	err := m.db.QueryRow(ctx, sql, id).Scan(
 		&mark.ID,
 		&mark.EmployeeID,
 		&mark.StudentID,
 		&mark.SubjectID,
 		&mark.Mark,
-		&date,
+		&mark.Date,
 	)
 	if err != nil {
 		return domain.Mark{}, handlePgError(err)
 	}
 
 	log.Println("sql result:", mark)
-	mark.Date = date.Format("2006-01-02")
 	return mark, nil
 }
 
@@ -82,30 +78,26 @@ func (m *marksRepository) FindAll(ctx context.Context) ([]domain.Mark, error) {
 	var marks []domain.Mark
 	log.Println("executing sql:", sql)
 
-	rows, err := m.dbclient.Query(ctx, sql)
+	rows, err := m.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var (
-			mark domain.Mark
-			date time.Time
-		)
+		var mark domain.Mark
 		err := rows.Scan(
 			&mark.ID,
 			&mark.EmployeeID,
 			&mark.StudentID,
 			&mark.SubjectID,
 			&mark.Mark,
-			&date,
+			&mark.Date,
 		)
 		if err != nil {
 			return nil, handlePgError(err)
 		}
 
-		mark.Date = date.Format("2006-01-02")
 		marks = append(marks, mark)
 	}
 
@@ -123,30 +115,26 @@ func (m *marksRepository) findByField(ctx context.Context, field string, value i
 	var marks []domain.Mark
 	log.Println("executing sql:", sql)
 
-	rows, err := m.dbclient.Query(ctx, sql, value)
+	rows, err := m.db.Query(ctx, sql, value)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var (
-			mark domain.Mark
-			date time.Time
-		)
+		var mark domain.Mark
 		err := rows.Scan(
 			&mark.ID,
 			&mark.EmployeeID,
 			&mark.StudentID,
 			&mark.SubjectID,
 			&mark.Mark,
-			&date,
+			&mark.Date,
 		)
 		if err != nil {
 			return nil, handlePgError(err)
 		}
 
-		mark.Date = date.Format("2006-01-02")
 		marks = append(marks, mark)
 	}
 
@@ -174,6 +162,72 @@ func (m *marksRepository) FindByDate(ctx context.Context, date string) ([]domain
 	return m.findByField(ctx, "date", date)
 }
 
+func (r *marksRepository) FindAllBySubject(ctx context.Context, id uint64, m uint16) ([]dto.MarkBySubjectDTO, error) {
+	sql := `
+		SELECT marks.student_id, marks.mark, marks.date
+		FROM public.marks
+		WHERE subject_id = $1 AND mark > $2
+	`
+
+	log.Println("executing sql:", sql)
+
+	rows, err := r.db.Query(ctx, sql, id, m)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	var result []dto.MarkBySubjectDTO
+	for rows.Next() {
+		var dto dto.MarkBySubjectDTO
+		err := rows.Scan(
+			&dto.StudentID,
+			&dto.Mark,
+			&dto.Date,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+		result = append(result, dto)
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
+func (r *marksRepository) FindAllSorted(ctx context.Context) ([]dto.SortedMarkDTO, error) {
+	sql := `
+		SELECT marks.student_id, marks.mark, marks.date
+		FROM public.marks
+		ORDER BY marks.date ASC, marks.mark DESC
+	`
+
+	log.Println("executing sql:", sql)
+
+	rows, err := r.db.Query(ctx, sql)
+	if err != nil {
+		return nil, handlePgError(err)
+	}
+	defer rows.Close()
+
+	var result []dto.SortedMarkDTO
+	for rows.Next() {
+		var dto dto.SortedMarkDTO
+		err := rows.Scan(
+			&dto.StudentID,
+			&dto.Mark,
+			&dto.Date,
+		)
+		if err != nil {
+			return nil, handlePgError(err)
+		}
+		result = append(result, dto)
+	}
+
+	log.Println("sql result:", result)
+	return result, nil
+}
+
 func (m *marksRepository) Update(ctx context.Context, id uint64, mark domain.Mark) error {
 	sql := `
 		UPDATE public.marks
@@ -183,7 +237,7 @@ func (m *marksRepository) Update(ctx context.Context, id uint64, mark domain.Mar
 	`
 
 	log.Println("executing sql:", sql)
-	err := m.dbclient.QueryRow(ctx, sql,
+	err := m.db.QueryRow(ctx, sql,
 		mark.EmployeeID,
 		mark.StudentID,
 		mark.SubjectID,
@@ -207,7 +261,7 @@ func (m *marksRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := m.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := m.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}

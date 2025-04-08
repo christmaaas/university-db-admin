@@ -12,17 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowLessonsForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowLessonsForm(content *fyne.Container, action int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
-	case "Добавить":
+	case 0:
 		showAddLessonsForm(content, r)
-	case "Удалить":
+	case 1:
 		showDeleteLessonsForm(content, r)
-	case "Обновить":
+	case 2:
 		showUpdateLessonsForm(content, r)
-	case "Просмотреть":
+	case 3:
 		showLessonsList(content, r)
 	}
 
@@ -58,7 +58,7 @@ func showAddLessonsForm(content *fyne.Container, r *repository.Repository) {
 			roomEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -72,12 +72,15 @@ func showAddLessonsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(lesson); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Lessons.Create(context.Background(), lesson)
-		showResult(content, err, "Занятие успешно добавлено")
+		if err = r.Lessons.Create(context.Background(), lesson); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Занятие успешно добавлено")
 	})
 
 	form := container.NewVBox(
@@ -101,19 +104,22 @@ func showDeleteLessonsForm(content *fyne.Container, r *repository.Repository) {
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Lessons.Delete(context.Background(), id)
-		showResult(content, err, "Занятие удалено")
+		if err = r.Lessons.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Занятие удалено")
 	})
 
 	form := container.NewVBox(
@@ -158,7 +164,7 @@ func showUpdateLessonsForm(content *fyne.Container, r *repository.Repository) {
 			roomEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -173,12 +179,15 @@ func showUpdateLessonsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(lesson); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Lessons.Update(context.Background(), lesson.ID, lesson)
-		showResult(content, err, "Занятие обновлено")
+		if err = r.Lessons.Update(context.Background(), lesson.ID, lesson); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Занятие обновлено")
 	})
 
 	form := container.NewVBox(
@@ -197,8 +206,6 @@ func showUpdateLessonsForm(content *fyne.Container, r *repository.Repository) {
 }
 
 func showLessonsList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID занятия",
 		"ID группы",
@@ -208,11 +215,16 @@ func showLessonsList(content *fyne.Container, r *repository.Repository) {
 		"День недели",
 		"Аудитория",
 	}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	options := []string{
+		"Все",
+		"ID",
+		"ID группы",
+		"ID предмета",
+		"ID типа занятия",
+		"Неделя",
+		"День недели",
+		"Аудитория",
+	}
 	filterOptions := map[string]uint8{
 		"Все":             0,
 		"ID":              1,
@@ -224,16 +236,9 @@ func showLessonsList(content *fyne.Container, r *repository.Repository) {
 		"Аудитория":       7,
 	}
 
-	options := []string{
-		"Все",
-		"ID",
-		"ID группы",
-		"ID предмета",
-		"ID типа занятия",
-		"Неделя",
-		"День недели",
-		"Аудитория",
-	}
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
 	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
@@ -246,6 +251,7 @@ func showLessonsList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -278,7 +284,7 @@ func showLessonsList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -299,7 +305,11 @@ func showLessonsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	lessons, _ := r.Lessons.FindAll(context.Background())
+	lessons, err := r.Lessons.FindAll(context.Background())
+	if err != nil {
+		showResult(content, "Ошибка: "+err.Error())
+		return
+	}
 	for _, l := range lessons {
 		data = append(data, []string{
 			fmt.Sprintf("%d", l.ID),
@@ -321,5 +331,4 @@ func showLessonsList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }

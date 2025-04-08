@@ -12,17 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowStudentsForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowStudentsForm(content *fyne.Container, action int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
-	case "Добавить":
+	case 0:
 		showAddStudentsForm(content, r)
-	case "Удалить":
+	case 1:
 		showDeleteStudentsForm(content, r)
-	case "Обновить":
+	case 2:
 		showUpdateStudentsForm(content, r)
-	case "Просмотреть":
+	case 3:
 		showStudentsList(content, r)
 	}
 
@@ -50,7 +50,7 @@ func showAddStudentsForm(content *fyne.Container, r *repository.Repository) {
 			groupEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -62,12 +62,15 @@ func showAddStudentsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(student); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Students.Create(context.Background(), student)
-		showResult(content, err, "Студент успешно добавлен")
+		if err = r.Students.Create(context.Background(), student); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Студент успешно добавлен")
 	})
 
 	form := container.NewVBox(
@@ -89,19 +92,22 @@ func showDeleteStudentsForm(content *fyne.Container, r *repository.Repository) {
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Students.Delete(context.Background(), id)
-		showResult(content, err, "Студент удалён")
+		if err = r.Students.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Студент удалён")
 	})
 
 	form := container.NewVBox(
@@ -138,7 +144,7 @@ func showUpdateStudentsForm(content *fyne.Container, r *repository.Repository) {
 			groupEntry.Text,
 		)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -151,12 +157,15 @@ func showUpdateStudentsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(student); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Students.Update(context.Background(), student.ID, student)
-		showResult(content, err, "Студент обновлён")
+		if err = r.Students.Update(context.Background(), student.ID, student); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Студент обновлён")
 	})
 
 	form := container.NewVBox(
@@ -173,8 +182,6 @@ func showUpdateStudentsForm(content *fyne.Container, r *repository.Repository) {
 }
 
 func showStudentsList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID студента",
 		"Имя",
@@ -182,11 +189,14 @@ func showStudentsList(content *fyne.Container, r *repository.Repository) {
 		"ID Куратора",
 		"ID Группы",
 	}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	options := []string{
+		"Все",
+		"ID",
+		"Имя",
+		"Паспорт",
+		"ID Куратора",
+		"ID Группы",
+	}
 	filterOptions := map[string]uint8{
 		"Все":         0,
 		"ID":          1,
@@ -196,14 +206,9 @@ func showStudentsList(content *fyne.Container, r *repository.Repository) {
 		"ID Группы":   5,
 	}
 
-	options := []string{
-		"Все",
-		"ID",
-		"Имя",
-		"Паспорт",
-		"ID Куратора",
-		"ID Группы",
-	}
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
 	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
@@ -216,6 +221,7 @@ func showStudentsList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -247,7 +253,7 @@ func showStudentsList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -266,7 +272,11 @@ func showStudentsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	students, _ := r.Students.FindAll(context.Background())
+	students, err := r.Students.FindAll(context.Background())
+	if err != nil {
+		showResult(content, "Ошибка: "+err.Error())
+		return
+	}
 	for _, s := range students {
 		data = append(data, []string{
 			fmt.Sprintf("%d", s.ID),
@@ -286,5 +296,4 @@ func showStudentsList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }

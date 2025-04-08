@@ -12,17 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowGroupsForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowGroupsForm(content *fyne.Container, action int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
-	case "Добавить":
+	case 0:
 		showAddGroupsForm(content, r)
-	case "Удалить":
+	case 1:
 		showDeleteGroupsForm(content, r)
-	case "Обновить":
+	case 2:
 		showUpdateGroupsForm(content, r)
-	case "Просмотреть":
+	case 3:
 		showGroupsList(content, r)
 	}
 
@@ -36,7 +36,7 @@ func showAddGroupsForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Добавить", func() {
 		err := validation.ValidateEmptyStrings(numberEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -45,12 +45,15 @@ func showAddGroupsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(group); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Groups.Create(context.Background(), group)
-		showResult(content, err, "Группа успешно добавлена")
+		if err = r.Groups.Create(context.Background(), group); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Группа успешно добавлена")
 	})
 
 	form := container.NewVBox(
@@ -69,19 +72,22 @@ func showDeleteGroupsForm(content *fyne.Container, r *repository.Repository) {
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Groups.Delete(context.Background(), id)
-		showResult(content, err, "Группа удалена")
+		if err = r.Groups.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Группа удалена")
 	})
 
 	form := container.NewVBox(
@@ -103,7 +109,7 @@ func showUpdateGroupsForm(content *fyne.Container, r *repository.Repository) {
 	updateButton := widget.NewButton("Обновить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text, numberEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -113,12 +119,15 @@ func showUpdateGroupsForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(group); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.Groups.Update(context.Background(), group.ID, group)
-		showResult(content, err, "Группа обновлена")
+		if err = r.Groups.Update(context.Background(), group.ID, group); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Группа обновлена")
 	})
 
 	form := container.NewVBox(
@@ -132,28 +141,24 @@ func showUpdateGroupsForm(content *fyne.Container, r *repository.Repository) {
 }
 
 func showGroupsList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID группы",
 		"Номер",
 	}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	options := []string{
+		"Все",
+		"ID",
+		"Номер",
+	}
 	filterOptions := map[string]uint8{
 		"Все":   0,
 		"ID":    1,
 		"Номер": 2,
 	}
 
-	options := []string{
-		"Все",
-		"ID",
-		"Номер",
-	}
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
 	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
@@ -166,6 +171,7 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -191,7 +197,7 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -207,7 +213,11 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	groups, _ := r.Groups.FindAll(context.Background())
+	groups, err := r.Groups.FindAll(context.Background())
+	if err != nil {
+		showResult(content, "Ошибка: "+err.Error())
+		return
+	}
 	for _, g := range groups {
 		data = append(data, []string{
 			fmt.Sprintf("%d", g.ID),
@@ -224,5 +234,4 @@ func showGroupsList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }

@@ -10,12 +10,12 @@ import (
 )
 
 type lessonTypesRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewLessonTypesRepository(dbclient *pgx.Conn) repository.LessonTypes {
+func NewLessonTypesRepository(db *pgx.Conn) repository.LessonTypes {
 	return &lessonTypesRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -27,7 +27,7 @@ func (l *lessonTypesRepository) Create(ctx context.Context, lsn domain.LessonTyp
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, lsn.Name).Scan(&lsn.ID)
+	err := l.db.QueryRow(ctx, sql, lsn.Name).Scan(&lsn.ID)
 	if err != nil {
 		return handlePgError(err)
 	}
@@ -45,7 +45,7 @@ func (l *lessonTypesRepository) FindOne(ctx context.Context, id uint64) (domain.
 
 	var lsn domain.LessonType
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, id).Scan(&lsn.ID, &lsn.Name)
+	err := l.db.QueryRow(ctx, sql, id).Scan(&lsn.ID, &lsn.Name)
 	if err != nil {
 		return domain.LessonType{}, handlePgError(err)
 	}
@@ -63,7 +63,7 @@ func (l *lessonTypesRepository) FindAll(ctx context.Context) ([]domain.LessonTyp
 	var lessonTypes []domain.LessonType
 	log.Println("executing sql:", sql)
 
-	rows, err := l.dbclient.Query(ctx, sql)
+	rows, err := l.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -91,7 +91,7 @@ func (l *lessonTypesRepository) FindByName(ctx context.Context, name string) (do
 
 	var lsn domain.LessonType
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, name).Scan(&lsn.ID, &lsn.Name)
+	err := l.db.QueryRow(ctx, sql, name).Scan(&lsn.ID, &lsn.Name)
 	if err != nil {
 		return domain.LessonType{}, handlePgError(err)
 	}
@@ -109,7 +109,7 @@ func (l *lessonTypesRepository) Update(ctx context.Context, id uint64, lsn domai
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, lsn.Name, id).Scan(&id)
+	err := l.db.QueryRow(ctx, sql, lsn.Name, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}
@@ -126,7 +126,7 @@ func (l *lessonTypesRepository) Delete(ctx context.Context, id uint64) error {
 	`
 
 	log.Println("executing sql:", sql)
-	err := l.dbclient.QueryRow(ctx, sql, id).Scan(&id)
+	err := l.db.QueryRow(ctx, sql, id).Scan(&id)
 	if err != nil {
 		return handlePgError(err)
 	}

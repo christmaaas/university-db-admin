@@ -10,12 +10,12 @@ import (
 )
 
 type employeesSubjectsRepository struct {
-	dbclient *pgx.Conn
+	db *pgx.Conn
 }
 
-func NewEmployeesSubjectsRepository(dbclient *pgx.Conn) repository.EmployeesSubjects {
+func NewEmployeesSubjectsRepository(db *pgx.Conn) repository.EmployeesSubjects {
 	return &employeesSubjectsRepository{
-		dbclient: dbclient,
+		db: db,
 	}
 }
 
@@ -27,7 +27,7 @@ func (s *employeesSubjectsRepository) Create(ctx context.Context, es domain.Empl
 	`
 
 	log.Println("executing sql:", sql)
-	err := s.dbclient.QueryRow(ctx, sql, es.EmployeeID, es.SubjectID).Scan(
+	err := s.db.QueryRow(ctx, sql, es.EmployeeID, es.SubjectID).Scan(
 		&es.EmployeeID,
 		&es.SubjectID,
 	)
@@ -48,7 +48,7 @@ func (s *employeesSubjectsRepository) FindAll(ctx context.Context) ([]domain.Emp
 	var empSbjs []domain.EmployeeSubject
 	log.Println("executing sql:", sql)
 
-	rows, err := s.dbclient.Query(ctx, sql)
+	rows, err := s.db.Query(ctx, sql)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -77,7 +77,7 @@ func (s *employeesSubjectsRepository) FindByEmployeeID(ctx context.Context, id u
 	var empSbjs []domain.EmployeeSubject
 	log.Println("executing sql:", sql)
 
-	rows, err := s.dbclient.Query(ctx, sql, id)
+	rows, err := s.db.Query(ctx, sql, id)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -106,7 +106,7 @@ func (s *employeesSubjectsRepository) FindBySubjectID(ctx context.Context, id ui
 	var empSbjs []domain.EmployeeSubject
 	log.Println("executing sql:", sql)
 
-	rows, err := s.dbclient.Query(ctx, sql, id)
+	rows, err := s.db.Query(ctx, sql, id)
 	if err != nil {
 		return nil, handlePgError(err)
 	}
@@ -134,7 +134,7 @@ func (s *employeesSubjectsRepository) Update(ctx context.Context, eid uint64, si
 	`
 
 	log.Println("executing sql:", sql)
-	err := s.dbclient.QueryRow(ctx, sql,
+	err := s.db.QueryRow(ctx, sql,
 		es.EmployeeID,
 		es.SubjectID,
 		eid,
@@ -156,7 +156,7 @@ func (s *employeesSubjectsRepository) Delete(ctx context.Context, eid uint64, si
 	`
 
 	log.Println("executing sql:", sql)
-	err := s.dbclient.QueryRow(ctx, sql, eid, sid).Scan(&eid, &sid)
+	err := s.db.QueryRow(ctx, sql, eid, sid).Scan(&eid, &sid)
 	if err != nil {
 		return handlePgError(err)
 	}

@@ -12,17 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func ShowLessonTypesForm(content *fyne.Container, action string, r *repository.Repository) {
+func ShowLessonTypesForm(content *fyne.Container, action int, r *repository.Repository) {
 	content.Objects = nil
 
 	switch action {
-	case "Добавить":
+	case 0:
 		showAddLessonTypesForm(content, r)
-	case "Удалить":
+	case 1:
 		showDeleteLessonTypesForm(content, r)
-	case "Обновить":
+	case 2:
 		showUpdateLessonTypesForm(content, r)
-	case "Просмотреть":
+	case 3:
 		showLessonTypesList(content, r)
 	}
 
@@ -36,7 +36,7 @@ func showAddLessonTypesForm(content *fyne.Container, r *repository.Repository) {
 	submitButton := widget.NewButton("Добавить", func() {
 		err := validation.ValidateEmptyStrings(nameEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -45,12 +45,15 @@ func showAddLessonTypesForm(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err = validation.ValidateStruct(lessonType); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.LessonTypes.Create(context.Background(), lessonType)
-		showResult(content, err, "Тип занятия добавлен")
+		if err = r.LessonTypes.Create(context.Background(), lessonType); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Тип занятия добавлен")
 	})
 
 	form := container.NewVBox(
@@ -69,19 +72,22 @@ func showDeleteLessonTypesForm(content *fyne.Container, r *repository.Repository
 	deleteButton := widget.NewButton("Удалить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
 		id := parseUint64(idEntry.Text)
 		err = validation.ValidatePositiveNumbers(id)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.LessonTypes.Delete(context.Background(), id)
-		showResult(content, err, "Тип занятия удален")
+		if err = r.LessonTypes.Delete(context.Background(), id); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Тип занятия удален")
 	})
 
 	form := container.NewVBox(
@@ -103,7 +109,7 @@ func showUpdateLessonTypesForm(content *fyne.Container, r *repository.Repository
 	updateButton := widget.NewButton("Обновить", func() {
 		err := validation.ValidateEmptyStrings(idEntry.Text, nameEntry.Text)
 		if err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -113,12 +119,15 @@ func showUpdateLessonTypesForm(content *fyne.Container, r *repository.Repository
 		}
 
 		if err = validation.ValidateStruct(lType); err != nil {
-			showResult(content, err, "")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
-		err = r.LessonTypes.Update(context.Background(), lType.ID, lType)
-		showResult(content, err, "Тип занятия обновлен")
+		if err = r.LessonTypes.Update(context.Background(), lType.ID, lType); err != nil {
+			showResult(content, "Ошибка: "+err.Error())
+			return
+		}
+		showResult(content, "Тип занятия обновлен")
 	})
 
 	form := container.NewVBox(
@@ -132,28 +141,24 @@ func showUpdateLessonTypesForm(content *fyne.Container, r *repository.Repository
 }
 
 func showLessonTypesList(content *fyne.Container, r *repository.Repository) {
-	content.Objects = nil
-
 	headers := []string{
 		"ID типа занятия",
 		"Название",
 	}
-	var data [][]string
-
-	filterEntry := widget.NewEntry()
-	filterEntry.SetPlaceHolder("Введите значение")
-
+	options := []string{
+		"Все",
+		"ID",
+		"Название",
+	}
 	filterOptions := map[string]uint8{
 		"Все":      0,
 		"ID":       1,
 		"Название": 2,
 	}
 
-	options := []string{
-		"Все",
-		"ID",
-		"Название",
-	}
+	filterEntry := widget.NewEntry()
+	filterEntry.SetPlaceHolder("Введите значение")
+
 	var selectedField uint8
 	filterSelect := widget.NewSelect(options, func(value string) {
 		selectedField = filterOptions[value]
@@ -166,6 +171,7 @@ func showLessonTypesList(content *fyne.Container, r *repository.Repository) {
 		}
 	})
 
+	var data [][]string
 	applyFilterButton := widget.NewButton("Применить фильтр", func() {
 		data = nil
 
@@ -191,7 +197,7 @@ func showLessonTypesList(content *fyne.Container, r *repository.Repository) {
 		}
 
 		if err != nil {
-			showResult(content, err, "Ошибка при поиске")
+			showResult(content, "Ошибка: "+err.Error())
 			return
 		}
 
@@ -207,7 +213,11 @@ func showLessonTypesList(content *fyne.Container, r *repository.Repository) {
 		content.Refresh()
 	})
 
-	lTypes, _ := r.LessonTypes.FindAll(context.Background())
+	lTypes, err := r.LessonTypes.FindAll(context.Background())
+	if err != nil {
+		showResult(content, "Ошибка: "+err.Error())
+		return
+	}
 	for _, l := range lTypes {
 		data = append(data, []string{
 			fmt.Sprintf("%d", l.ID),
@@ -224,5 +234,4 @@ func showLessonTypesList(content *fyne.Container, r *repository.Repository) {
 
 	content.Add(filterContainer)
 	content.Add(updateTable(headers, data))
-	content.Refresh()
 }
